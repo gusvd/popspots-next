@@ -29,9 +29,11 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const searchName = searchParams.get("placeName");
   const searchType = searchParams.get("locationType");
-  const searchLat = Number(searchParams.get("lat"));
-  const searchLng = Number(searchParams.get("lng"));
+  // const searchLat = Number(searchParams.get("lat"));
+  // const searchLng = Number(searchParams.get("lng"));
+  const searchCenter = JSON.parse(searchParams.get("center"));
   const searchBounds = JSON.parse(searchParams.get("bounds"));
+  const searchNe = JSON.parse(searchParams.get("ne"));
 
   const map = useRef();
   const autocomplete = useRef();
@@ -65,6 +67,7 @@ export default function ResultsPage() {
     await loader.load();
     const { Map } = await google.maps.importLibrary("maps");
     const { Places } = await google.maps.importLibrary("places");
+    const { Geometry } = await google.maps.importLibrary("geometry");
 
     //Add Map to DOM
     map.current = new Map(document.getElementById("map"), {
@@ -153,25 +156,43 @@ export default function ResultsPage() {
     });
 
     // Add radius circle
+    const center = search.request.location;
+    const radius = google.maps.geometry.spherical.computeDistanceBetween(
+      center,
+      search.ne
+    );
+    console.log("radius:", radius);
     const mapCircle = map.current;
     const circle = new google.maps.Circle({
       strokeColor: "#4C04A9",
       strokeOpacity: 1,
-      strokeWeight: 2,
+      strokeWeight: 5,
       // fillColor: "#FF0000",
       fillOpacity: 0,
       mapCircle,
-      center: search.request.location,
-      radius: 1000,
+      center: center,
+      radius: radius,
     });
     circle.setMap(map.current);
 
+    // TEST adds a rectangle with the bounds of the search
+    const rectangle = new google.maps.Rectangle({
+      strokeColor: "#FF0000",
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: "#FF0000",
+      fillOpacity: 0.35,
+      mapCircle,
+      bounds: search.request.bounds,
+    });
+    rectangle.setMap(map.current);
+
     // Pan map to the location
     // map.current.panTo(search.request.location); // center map on location
-    // map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
+    map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
     // map.current.setCenter(search.request.location);
     // map.current.setZoom(14);
-    map.current.fitBounds(circle.getBounds());
+    // map.current.fitBounds(circle.getBounds()); // fit map to bounds of the circle
 
     return () => {
       deleteMarkers();
@@ -211,23 +232,24 @@ export default function ResultsPage() {
 
   // New search on button click
   function handleNewSearch() {
-    let location;
-    if (autocomplete.current.getPlace()) {
-      location = {
+    let center;
+    const location = autocomplete.current.getPlace();
+    if (location) {
+      center = {
         lat: location.geometry.location.lat(),
         lng: location.geometry.location.lng(),
       };
     } else if (searchLat && searchLng) {
-      location = {
+      center = {
         lat: searchLat,
         lng: searchLng,
       };
     } else {
-      location = null;
+      center = null;
     }
     const type = locationType.current.getValue();
 
-    if (!location) {
+    if (!center) {
       setSearchMessage("Please select a location above.");
       return;
     }
@@ -237,28 +259,28 @@ export default function ResultsPage() {
     }
     setSearch({
       request: {
-        location: location,
-        // bounds: location.geometry.viewport,
-        radius: 1000,
+        location: location.geometry.viewport.getCenter(),
+        bounds: location.geometry.viewport,
+        // radius: 1000,
         type: [type[0].value],
       },
       locatioName: location.name,
+      ne: location.geometry.viewport.getNorthEast(),
     });
   }
 
   // Initial search from query string
   function loadInitialSearch() {
+    console.log("search", search);
     setSearch({
       request: {
-        location: {
-          lat: Number(searchLat),
-          lng: Number(searchLng),
-        },
-        // bounds: searchBounds,
-        radius: 1000,
+        location: searchCenter,
+        bounds: searchBounds,
+        // radius: 1000,
         type: searchType,
       },
       locatioName: searchName,
+      ne: searchNe,
     });
   }
 
@@ -340,11 +362,11 @@ export default function ResultsPage() {
             </div>
             {/*  Radius Select */}
             <div className="-mt-4 flex flex-row items-center">
-              <p className="text-purple-800 text-sm text-right grow">Radius:</p>
+              <p className="grow text-right text-sm text-purple-800">Radius:</p>
               {/* <div className="w-20"> */}
               <Select
                 unstyled
-                style={{ width: "200px" }}
+                instanceId="radius"
                 classNames={{
                   container: () => "text-sm",
                   control: () => "px-2",
@@ -371,13 +393,13 @@ export default function ResultsPage() {
             <div>
               {/* Search summary ---- */}
               <p className="pb-6">{searchMessage}</p>
-              <div className="grid grid-cols-3 gap-6 after:content-[''] after:flex-auto">
+              <div className="grid grid-cols-3 gap-6 after:flex-auto after:content-['']">
                 {ResultCards}
               </div>
             </div>
           </div>
           <div className="col h-full w-2/5 px-0">
-            <div className="w-full h-full" id="map"></div>
+            <div className="h-full w-full" id="map"></div>
           </div>
         </div>
       </div>

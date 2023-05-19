@@ -53,11 +53,14 @@ const SearchForm = () => {
       return;
     }
     const type = typeInput[0].value;
-    const lat = location.geometry.location.lat();
-    const lng = location.geometry.location.lng();
+    // const lat = location.geometry.location.lat();
+    // const lng = location.geometry.location.lng();
+    const center = JSON.stringify(location.geometry.viewport.getCenter());
     const bounds = JSON.stringify(location.geometry.viewport);
     const placeName = autocompleteInput.current.value;
-    const query = `?placeName=${placeName}&locationType=${type}&lat=${lat}&lng=${lng}&bounds=${bounds}`;
+    const ne = JSON.stringify(location.geometry.viewport.getNorthEast());
+    // const query = `?placeName=${placeName}&locationType=${type}&lat=${lat}&lng=${lng}&bounds=${bounds}&ne=${ne}`;
+    const query = `?placeName=${placeName}&locationType=${type}&center=${center}&bounds=${bounds}&ne=${ne}`;
     router.push(`/results${query}`);
   }
 
@@ -96,7 +99,7 @@ const SearchForm = () => {
       {/* Search button ---- */}
       <button
         onClick={searchPlaces}
-        className="bg-primary flex gap-x-2 h-12 cursor-pointer place-content-center content-center items-center rounded-full border-2 border-purple-800 bg-purple-800"
+        className="bg-primary flex h-12 cursor-pointer place-content-center content-center items-center gap-x-2 rounded-full border-2 border-purple-800 bg-purple-800"
       >
         <img className="h-7 items-center" src={SearchIcon.src} />
         <p className="text-white">Search</p>

@@ -9,15 +9,15 @@ export default function ResultCard(props) {
         // onMouseEnter={() => props.selectMarker(props.index)}
         // onMouseLeave={props.showAllMarkers}
       >
-        <div className="group transition-colors flex flex-col p-4 gap-3 rounded-2xl hover:bg-beige-100 hover:cursor-pointer text-beige-900 text-sm">
+        <div className="group flex flex-col gap-3 rounded-2xl p-4 text-sm text-beige-900 transition-colors hover:cursor-pointer hover:bg-beige-100">
           {props.image && <img src={props.image} alt="Cover Image" />}
-          <h3 className="text text-purple-800 text-base font-semibold line-clamp-3">
+          <h3 className="text line-clamp-3 text-base font-semibold text-purple-800">
             <span className="text-sm font-normal">{props.index + 1} - </span>
             <span className="group-hover:underline">{props.name}</span>
           </h3>
           {props.totalreviews ? (
             <div className="flex">
-              <div className="flex mr-4">
+              <div className="mr-4 flex">
                 <img className="mr-1" src={star.src} alt="Total reviews" />
                 <p>{props.totalreviews}</p>
               </div>
@@ -27,7 +27,7 @@ export default function ResultCard(props) {
               </div>
             </div>
           ) : (
-            <div className="flex mr-4">
+            <div className="mr-4 flex">
               <img className="mr-1" src={star.src} alt="Total reviews" />
               <p className="text-xs   opacity-30">No reviews</p>
             </div>
