@@ -6,8 +6,8 @@ export default function ResultCard(props) {
       <a
         // href={"https://www.google.com/maps/place/?q=place_id:" + props.placeID}
         target="_blank"
-        onMouseEnter={() => props.selectMarker(props.index)}
-        onMouseLeave={props.showAllMarkers}
+        // onMouseEnter={() => props.selectMarker(props.index)}
+        // onMouseLeave={props.showAllMarkers}
       >
         <div className="group transition-colors flex flex-col p-4 gap-3 rounded-2xl hover:bg-beige-100 hover:cursor-pointer text-beige-900 text-sm">
           {props.image && <img src={props.image} alt="Cover Image" />}

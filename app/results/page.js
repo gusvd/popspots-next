@@ -29,8 +29,8 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const searchName = searchParams.get("placeName");
   const searchType = searchParams.get("locationType");
-  const searchLat = searchParams.get("lat");
-  const searchLng = searchParams.get("lng");
+  const searchLat = Number(searchParams.get("lat"));
+  const searchLng = Number(searchParams.get("lng"));
   const searchBounds = JSON.parse(searchParams.get("bounds"));
 
   const map = useRef();
@@ -94,9 +94,10 @@ export default function ResultsPage() {
     const resultOut = placesService.nearbySearch(
       search.request,
       (results, status) => {
-        console.log("places fetched", status);
+        console.log("status", status);
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           const sortedResults = sortResults(results);
+          console.log("sorted results", sortedResults);
           setResultList(sortedResults);
           setSearchMessage(
             `Showing the top ${results.length} ${search.request.type} in ${search.locatioName}`
@@ -134,7 +135,6 @@ export default function ResultsPage() {
   // Updates map and markers every time the Search Result state changes
   useEffect(() => {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
-    console.log("results list:", resultList);
     //Add markers
     resultList.map((item, index) => {
       var marker = new google.maps.Marker({
@@ -152,10 +152,26 @@ export default function ResultsPage() {
       markers.current.push(marker);
     });
 
+    // Add radius circle
+    const mapCircle = map.current;
+    const circle = new google.maps.Circle({
+      strokeColor: "#4C04A9",
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      // fillColor: "#FF0000",
+      fillOpacity: 0,
+      mapCircle,
+      center: search.request.location,
+      radius: 1000,
+    });
+    circle.setMap(map.current);
+
     // Pan map to the location
     // map.current.panTo(search.request.location); // center map on location
-    console.log("bounds from search state:", search.request.bounds);
-    map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
+    // map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
+    // map.current.setCenter(search.request.location);
+    // map.current.setZoom(14);
+    map.current.fitBounds(circle.getBounds());
 
     return () => {
       deleteMarkers();
@@ -190,15 +206,27 @@ export default function ResultsPage() {
   };
 
   // ************************************ //
-  // HANDLES NEW SEARCH
+  // HANDLES SEARCH
   // ************************************ //
 
   // New search on button click
   function handleNewSearch() {
-    const location = autocomplete.current.getPlace();
+    let location;
+    if (autocomplete.current.getPlace()) {
+      location = {
+        lat: location.geometry.location.lat(),
+        lng: location.geometry.location.lng(),
+      };
+    } else if (searchLat && searchLng) {
+      location = {
+        lat: searchLat,
+        lng: searchLng,
+      };
+    } else {
+      location = null;
+    }
     const type = locationType.current.getValue();
-    console.log("location autocomplete:", location);
-    ``;
+
     if (!location) {
       setSearchMessage("Please select a location above.");
       return;
@@ -209,11 +237,9 @@ export default function ResultsPage() {
     }
     setSearch({
       request: {
-        location: {
-          lat: location.geometry.location.lat(),
-          lng: location.geometry.location.lng(),
-        },
-        bounds: location.geometry.viewport,
+        location: location,
+        // bounds: location.geometry.viewport,
+        radius: 1000,
         type: [type[0].value],
       },
       locatioName: location.name,
@@ -222,14 +248,13 @@ export default function ResultsPage() {
 
   // Initial search from query string
   function loadInitialSearch() {
-    console.log(searchLat, searchLng, searchType, searchName);
     setSearch({
       request: {
         location: {
           lat: Number(searchLat),
           lng: Number(searchLng),
         },
-        bounds: searchBounds,
+        // bounds: searchBounds,
         radius: 1000,
         type: searchType,
       },
@@ -268,11 +293,7 @@ export default function ResultsPage() {
         <div className="row mx-0 flex h-full">
           <div className="col w-3/5 px-20 py-16 lg:flex lg:flex-col lg:gap-y-6">
             <div>
-              <img
-                onClick={() => console.log(markers.current)}
-                className="w-28"
-                src={PopSpotsLogo.src}
-              />
+              <img className="w-28" src={PopSpotsLogo.src} />
             </div>
             <div className="lg:flex lg:flex-row">
               {/* Location search box ---- */}
@@ -282,6 +303,7 @@ export default function ResultsPage() {
                 className="form-input h-12 grow rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 placeholder:text-purple-800"
                 type="text"
                 placeholder="Location"
+                defaultValue={searchName}
               />
               {/* Type search box ---- */}
               <Select
@@ -302,6 +324,9 @@ export default function ResultsPage() {
                   singleValue: () => "text-purple-800",
                 }}
                 options={locationTypes}
+                defaultValue={
+                  locationTypes.filter((type) => type.value === searchType)[0]
+                }
                 ref={locationType}
               />
               {/* Search button ---- */}
@@ -312,6 +337,36 @@ export default function ResultsPage() {
               >
                 <img className="h-7 items-center" src={SearchIcon.src} />
               </a>
+            </div>
+            {/*  Radius Select */}
+            <div className="-mt-4 flex flex-row items-center">
+              <p className="text-purple-800 text-sm text-right grow">Radius:</p>
+              {/* <div className="w-20"> */}
+              <Select
+                unstyled
+                style={{ width: "200px" }}
+                classNames={{
+                  container: () => "text-sm",
+                  control: () => "px-2",
+                  placeholder: () => "text-purple-800",
+                  dropdownIndicator: () => "text-purple-800",
+                  menu: () => "bg-white py-3 shadow-md",
+                  option: (state) =>
+                    state.isFocused
+                      ? "bg-purple-100 text-purple-800 py-2 px-3"
+                      : "text-purple-800 bg-white py-2 px-3",
+                  singleValue: () => "text-purple-800",
+                }}
+                options={[
+                  { value: "1000", label: "1 km" },
+                  { value: "2000", label: "2 km" },
+                  { value: "5000", label: "5 km" },
+                  { value: "10000", label: "10 km" },
+                  { value: "50000", label: "50 km" },
+                ]}
+                defaultValue={{ value: "1000", label: "1 km" }}
+              />
+              {/* </div> */}
             </div>
             <div>
               {/* Search summary ---- */}
