@@ -14,6 +14,8 @@ const SearchForm = () => {
   const locationType = useRef();
   const [searchMessage, setSearchMessage] = useState("");
   const router = useRouter();
+  const geolocationLat = useRef(null);
+  const geoLocationLng = useRef(null);
 
   useEffect(() => {
     // LOAD GOOGLE MAPS API
@@ -39,28 +41,71 @@ const SearchForm = () => {
         options
       );
     });
+
+    // GEOLOCATION
+    geoFindMe();
   }, []);
 
+  /// GEOLOCATION API
+  function geoFindMe() {
+    function success(position) {
+      geolocationLat.current = position.coords.latitude;
+      geoLocationLng.current = position.coords.longitude;
+      autocompleteInput.current.value = "My Location";
+      console.log("geolocation", geolocationLat, geoLocationLng);
+    }
+
+    function error() {
+      // status.textContent = "Unable to retrieve your location";
+      console.log("Unable to retrieve your location");
+    }
+
+    if (!navigator.geolocation) {
+      console.log("Geolocation is not supported by your browser");
+    } else {
+      autocompleteInput.current.value = "Finding my Location...";
+      navigator.geolocation.getCurrentPosition(success, error);
+    }
+  }
+
   function searchPlaces() {
+    /// check and assign location
     const location = autocomplete.current.getPlace();
-    const typeInput = locationType.current.getValue();
-    if (!location) {
+    let placeName, type, center, isGeolocation;
+    let bounds = "";
+    let ne = "";
+    console.log("my location:", geolocationLat.current, geoLocationLng.current);
+
+    if (location) {
+      // const lat = location.geometry.location.lat();
+      // const lng = location.geometry.location.lng();
+      center = JSON.stringify(location.geometry.viewport.getCenter());
+      bounds = JSON.stringify(location.geometry.viewport);
+      placeName = autocompleteInput.current.value;
+      ne = JSON.stringify(location.geometry.viewport.getNorthEast());
+      isGeolocation = false;
+    } else if (geolocationLat.current && geoLocationLng.current) {
+      center = JSON.stringify({
+        lat: geolocationLat.current,
+        lng: geoLocationLng.current,
+      });
+      placeName = "My Location";
+      isGeolocation = true;
+    } else {
       setSearchMessage("Please select a location above.");
       return;
     }
+
+    /// check and assign type
+    const typeInput = locationType.current.getValue();
+
     if (typeInput.length < 1) {
       setSearchMessage("Please select a location type above");
       return;
     }
-    const type = typeInput[0].value;
-    // const lat = location.geometry.location.lat();
-    // const lng = location.geometry.location.lng();
-    const center = JSON.stringify(location.geometry.viewport.getCenter());
-    const bounds = JSON.stringify(location.geometry.viewport);
-    const placeName = autocompleteInput.current.value;
-    const ne = JSON.stringify(location.geometry.viewport.getNorthEast());
+    type = typeInput[0].value;
     // const query = `?placeName=${placeName}&locationType=${type}&lat=${lat}&lng=${lng}&bounds=${bounds}&ne=${ne}`;
-    const query = `?placeName=${placeName}&locationType=${type}&center=${center}&bounds=${bounds}&ne=${ne}`;
+    const query = `?placeName=${placeName}&locationType=${type}&center=${center}&bounds=${bounds}&ne=${ne}&isGeolocation=${isGeolocation}`;
     router.push(`/results${query}`);
   }
 

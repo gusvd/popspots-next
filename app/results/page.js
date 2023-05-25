@@ -31,14 +31,23 @@ export default function ResultsPage() {
   const searchType = searchParams.get("locationType");
   // const searchLat = Number(searchParams.get("lat"));
   // const searchLng = Number(searchParams.get("lng"));
-  const searchCenter = JSON.parse(searchParams.get("center"));
-  const searchBounds = JSON.parse(searchParams.get("bounds"));
-  const searchNe = JSON.parse(searchParams.get("ne"));
+  const searchCenter = searchParams.get("center")
+    ? JSON.parse(searchParams.get("center"))
+    : null;
+  const searchBounds = searchParams.get("bounds")
+    ? JSON.parse(searchParams.get("bounds"))
+    : null;
+  const searchNe = searchParams.get("ne")
+    ? JSON.parse(searchParams.get("ne"))
+    : null;
+  let isGeolocation = searchParams.get("isGeolocation") === "true";
 
   const map = useRef();
   const autocomplete = useRef();
   const locationType = useRef();
+  const selectRadius = useRef();
   const markers = useRef([]);
+  const circle = useRef([]);
   const [search, setSearch] = useState();
   const [searchMessage, setSearchMessage] = useState("");
   const [resultList, setResultList] = useState();
@@ -92,7 +101,7 @@ export default function ResultsPage() {
   //Fetch results every time the search State changes
   useEffect(() => {
     if (!search) return;
-    console.log("search.request", search.request);
+    console.log("search request", search);
     const placesService = new google.maps.places.PlacesService(map.current);
     const resultOut = placesService.nearbySearch(
       search.request,
@@ -155,47 +164,62 @@ export default function ResultsPage() {
       markers.current.push(marker);
     });
 
-    // Add radius circle
+    // Add circle
+    let radius;
     const center = search.request.location;
-    const radius = google.maps.geometry.spherical.computeDistanceBetween(
-      center,
-      search.ne
-    );
-    console.log("radius:", radius);
     const mapCircle = map.current;
-    const circle = new google.maps.Circle({
+    const location = autocomplete.current.getPlace();
+
+    if (!location) {
+      console.log("no location if statement yes", location);
+
+      radius = search.request.radius
+        ? search.request.radius
+        : google.maps.geometry.spherical.computeDistanceBetween(
+            center,
+            search.ne
+          );
+      map.current.setCenter(search.request.location);
+      map.current.setZoom(14);
+    } else {
+      radius = google.maps.geometry.spherical.computeDistanceBetween(
+        center,
+        search.ne
+      );
+      // Pan map to the location
+      // map.current.panTo(search.request.location); // center map on location
+      map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
+      // map.current.fitBounds(circle.getBounds()); // fit map to bounds of the circle
+    }
+    console.log("circle radius", radius);
+
+    circle.current = new google.maps.Circle({
       strokeColor: "#4C04A9",
       strokeOpacity: 1,
-      strokeWeight: 5,
+      strokeWeight: 2,
       // fillColor: "#FF0000",
       fillOpacity: 0,
       mapCircle,
       center: center,
       radius: radius,
     });
-    circle.setMap(map.current);
+    circle.current.setMap(map.current);
 
     // TEST adds a rectangle with the bounds of the search
-    const rectangle = new google.maps.Rectangle({
-      strokeColor: "#FF0000",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#FF0000",
-      fillOpacity: 0.35,
-      mapCircle,
-      bounds: search.request.bounds,
-    });
-    rectangle.setMap(map.current);
-
-    // Pan map to the location
-    // map.current.panTo(search.request.location); // center map on location
-    map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
-    // map.current.setCenter(search.request.location);
-    // map.current.setZoom(14);
-    // map.current.fitBounds(circle.getBounds()); // fit map to bounds of the circle
+    // const rectangle = new google.maps.Rectangle({
+    //   strokeColor: "#FF0000",
+    //   strokeOpacity: 0.2,
+    //   strokeWeight: 2,
+    //   fillColor: "#FF0000",
+    //   fillOpacity: 0.1,
+    //   mapCircle,
+    //   bounds: search.request.bounds,
+    // });
+    // rectangle.setMap(map.current);
 
     return () => {
       deleteMarkers();
+      deleteCircle();
     };
   }, [resultList]);
 
@@ -205,6 +229,11 @@ export default function ResultsPage() {
       markers.current[i].setMap(null);
     }
     markers.current = [];
+  };
+
+  // Deletes circle
+  const deleteCircle = () => {
+    circle.current.setMap(null);
   };
 
   // Highlight marker on Hover of the Result Card
@@ -232,18 +261,23 @@ export default function ResultsPage() {
 
   // New search on button click
   function handleNewSearch() {
-    let center;
+    let center, bounds, locationName, ne;
     const location = autocomplete.current.getPlace();
     if (location) {
       center = {
         lat: location.geometry.location.lat(),
         lng: location.geometry.location.lng(),
       };
-    } else if (searchLat && searchLng) {
-      center = {
-        lat: searchLat,
-        lng: searchLng,
+      bounds = location.geometry.viewport;
+      locationName = location.name;
+      ne = {
+        lat: location.geometry.viewport.getNorthEast().lat(),
+        lng: location.geometry.viewport.getNorthEast().lng(),
       };
+    } else if (searchCenter) {
+      center = searchCenter;
+      locationName = searchName;
+      ne = searchNe;
     } else {
       center = null;
     }
@@ -259,30 +293,36 @@ export default function ResultsPage() {
     }
     setSearch({
       request: {
-        location: location.geometry.viewport.getCenter(),
-        bounds: location.geometry.viewport,
-        // radius: 1000,
+        location: center,
         type: [type[0].value],
+        ...(bounds
+          ? { bounds: bounds }
+          : { radius: selectRadius.current.getValue()[0].value }),
       },
-      locatioName: location.name,
-      ne: location.geometry.viewport.getNorthEast(),
+      locatioName: locationName,
+      ne: ne,
     });
   }
 
   // Initial search from query string
   function loadInitialSearch() {
-    console.log("search", search);
+    const radius = selectRadius.current.getValue()[0].value;
+    const bounds = searchBounds;
     setSearch({
       request: {
         location: searchCenter,
-        bounds: searchBounds,
-        // radius: 1000,
         type: searchType,
+        ...(isGeolocation
+          ? { radius: radius } // set default radius from geolocation search
+          : { bounds: bounds }),
       },
       locatioName: searchName,
       ne: searchNe,
     });
   }
+
+  // Set radius dropdown to the closet radius
+  function setRadiusDropdown(radius) {}
 
   // ************************************ //
   // COMPONENTS
@@ -380,13 +420,14 @@ export default function ResultsPage() {
                   singleValue: () => "text-purple-800",
                 }}
                 options={[
-                  { value: "1000", label: "1 km" },
-                  { value: "2000", label: "2 km" },
-                  { value: "5000", label: "5 km" },
-                  { value: "10000", label: "10 km" },
-                  { value: "50000", label: "50 km" },
+                  { value: 1000, label: "1 km" },
+                  { value: 2000, label: "2 km" },
+                  { value: 5000, label: "5 km" },
+                  { value: 10000, label: "10 km" },
+                  { value: 50000, label: "50 km" },
                 ]}
-                defaultValue={{ value: "1000", label: "1 km" }}
+                defaultValue={{ value: 1000, label: "1 km" }}
+                ref={selectRadius}
               />
               {/* </div> */}
             </div>
