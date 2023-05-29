@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.pac-container {
+  @apply bg-white p-3 font-sans shadow-sm;
+}
+
+.pac-icon {
+  display: none;
+}
+
+.pac-item {
+  @apply border-none font-sans text-xs leading-10 text-purple-800;
+}
+
+.pac-item-selected {
+  @apply border-none bg-purple-100 font-sans font-normal leading-10 text-purple-800;
+}
+
+.pac-item:hover {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.pac-item-query {
+  @apply text-base font-normal text-purple-800;
+}
+
+.pac-matched {
+  @apply text-base font-semibold text-purple-800;
+}

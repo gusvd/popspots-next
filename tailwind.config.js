@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-DMSans)"],
+      },
       colors: {
         beige: {
           50: "#FEFBF6",

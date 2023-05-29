@@ -4,6 +4,7 @@ import { DM_Sans } from "next/font/google";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
+  variable: "--font-DMSans",
 });
 
 export const metadata = {
@@ -14,7 +15,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.className} bg-beige-50`}>{children}</body>
+      <body className={`${dmSans.variable} bg-beige-50 font-sans`}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -141,7 +141,11 @@ export default function ResultsPage() {
           console.log("sorted results", sortedResults);
           setResultList(sortedResults);
           setSearchMessage(
-            `Showing the top ${results.length} ${search.request.type} in ${search.locatioName}`
+            writeSearchMessage(
+              results.length,
+              search.request.type,
+              search.locatioName
+            )
           );
         } else if (
           status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS
@@ -152,6 +156,13 @@ export default function ResultsPage() {
       }
     );
   }, [search]);
+
+  function writeSearchMessage(amount, type, name) {
+    const locationType = locationTypes.find(
+      (option) => option.value === type
+    ).label;
+    return `Showing the top ${amount} ${locationType} in ${name}`;
+  }
 
   // Sorts results by amount of reviews and filters out non operational places
   const sortResults = (results) => {
@@ -393,7 +404,7 @@ export default function ResultsPage() {
               <input
                 id="autocomplete"
                 name="location"
-                className="h-12 flex-1 rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 placeholder:text-purple-800"
+                className="h-12 flex-1 rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 text-purple-800 placeholder:text-purple-800"
                 type="text"
                 placeholder="Location"
                 defaultValue={searchName}
@@ -401,7 +412,7 @@ export default function ResultsPage() {
               {/* Type search box ---- */}
               <Select
                 unstyled
-                instanceId="autocomplete"
+                instanceId="typeselect"
                 placeholder="Type"
                 classNames={{
                   container: () => "h-12 flex-1",
@@ -409,7 +420,7 @@ export default function ResultsPage() {
                     "h-12 px-6 border-2 border-r-0 border-purple-800 bg-white",
                   placeholder: () => "text-purple-800",
                   dropdownIndicator: () => "text-purple-800",
-                  menu: () => "bg-white py-3  shadow-md",
+                  menu: () => "bg-white py-3 shadow-md",
                   option: (state) =>
                     state.isFocused
                       ? "bg-purple-100 text-purple-800 py-2 px-3"
@@ -432,7 +443,7 @@ export default function ResultsPage() {
               </a>
             </div>
             {/*  Radius Select */}
-            <div className="mt-4 flex flex-row items-center">
+            <div className="-mt-4 flex flex-row items-center">
               <p className="grow text-right text-sm text-purple-800">Radius:</p>
               {/* <div className="w-20"> */}
               <Select
@@ -460,7 +471,7 @@ export default function ResultsPage() {
             </div>
             <div>
               {/* Search summary ---- */}
-              <p className="pb-6">{searchMessage}</p>
+              <p className="pb-6 text-beige-900">{searchMessage}</p>
               <div className="grid grid-cols-3 gap-6 after:flex-auto after:content-['']">
                 {ResultCards}
               </div>
