@@ -276,18 +276,26 @@ export default function ResultsPage() {
       // Otherwise use the previous information from the Search state
       // This will happen when the location comes from the Search Params
       // and the user searches again without slecting a new location from the autcomplete
+
       if (placeAutocomlete) {
         locationCenter = {
           lat: placeAutocomlete.geometry.location.lat(),
           lng: placeAutocomlete.geometry.location.lng(),
         };
+        locationNe = {
+          lat: placeAutocomlete.geometry.viewport.getNorthEast().lat(),
+          lng: placeAutocomlete.geometry.viewport.getNorthEast().lng(),
+        };
         locatioName = placeAutocomlete.name;
       } else {
         locationCenter = search.request.location;
         locatioName = search.locatioName;
+        locationNe = search.ne;
       }
       // Set radius. Either from the Radius Select or
       // from the bounds coming from the Autocomplete
+      console.log("radius calc", locationCenter, locationNe);
+
       locationRadius = radiusOverwrite.current
         ? selectRadius.current.getValue()[0].value
         : boundsToRadius(locationCenter, locationNe);
@@ -300,6 +308,7 @@ export default function ResultsPage() {
       locationtype = searchType;
       locationRadius = selectRadius.current.getValue()[0].value;
       locatioName = searchName;
+      locationNe = searchNe;
     } else {
       setSearchMessage("Please select a location above.");
       return;
@@ -310,10 +319,10 @@ export default function ResultsPage() {
         location: locationCenter,
         type: locationtype,
         radius: locationRadius,
-        // bonds: locationBonds,
+        bonds: locationBonds,
       },
       locatioName: locatioName,
-      // ne: locationNe,
+      ne: locationNe,
     };
 
     setSearch(searchObject);
@@ -379,12 +388,12 @@ export default function ResultsPage() {
             <div>
               <img className="w-28" src={PopSpotsLogo.src} />
             </div>
-            <div className="lg:flex lg:flex-row">
+            <div className="w-full lg:flex lg:flex-row">
               {/* Location search box ---- */}
               <input
                 id="autocomplete"
                 name="location"
-                className="form-input h-12 grow rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 placeholder:text-purple-800"
+                className="h-12 flex-1 rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 placeholder:text-purple-800"
                 type="text"
                 placeholder="Location"
                 defaultValue={searchName}
@@ -395,9 +404,9 @@ export default function ResultsPage() {
                 instanceId="autocomplete"
                 placeholder="Type"
                 classNames={{
-                  container: () => "h-12 grow",
+                  container: () => "h-12 flex-1",
                   control: () =>
-                    "form-input h-12 grow px-6 border-2 border-r-0 border-purple-800 bg-white",
+                    "h-12 px-6 border-2 border-r-0 border-purple-800 bg-white",
                   placeholder: () => "text-purple-800",
                   dropdownIndicator: () => "text-purple-800",
                   menu: () => "bg-white py-3  shadow-md",
@@ -416,14 +425,14 @@ export default function ResultsPage() {
               {/* Search button ---- */}
 
               <a
-                className="bg-primary flex h-12 w-20 cursor-pointer place-content-center content-center items-center rounded-full rounded-l-none border-2 border-purple-800 bg-purple-800"
+                className="flex h-12 w-20 flex-none cursor-pointer place-content-center content-center items-center rounded-full rounded-l-none border-2 border-purple-800 bg-purple-800"
                 onClick={updateSearch}
               >
                 <img className="h-7 items-center" src={SearchIcon.src} />
               </a>
             </div>
             {/*  Radius Select */}
-            <div className="-mt-4 flex flex-row items-center">
+            <div className="mt-4 flex flex-row items-center">
               <p className="grow text-right text-sm text-purple-800">Radius:</p>
               {/* <div className="w-20"> */}
               <Select
@@ -431,7 +440,7 @@ export default function ResultsPage() {
                 instanceId="radius"
                 classNames={{
                   container: () => "text-sm",
-                  control: () => "px-2",
+                  control: () => "px-3",
                   placeholder: () => "text-purple-800",
                   dropdownIndicator: () => "text-purple-800",
                   menu: () => "bg-white py-3 shadow-md",
