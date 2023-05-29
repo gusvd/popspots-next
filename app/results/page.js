@@ -23,6 +23,7 @@ const mapOptions = {
   rotateControl: false,
   fullscreenControl: false,
   gestureHandling: "cooperative",
+  mapId: "92d1a48ec4b0d2cc",
 };
 
 const radiusSelectOptions = [
@@ -94,6 +95,8 @@ export default function ResultsPage() {
     const { Map } = await google.maps.importLibrary("maps");
     const { Places } = await google.maps.importLibrary("places");
     const { Geometry } = await google.maps.importLibrary("geometry");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+    const { PinElement } = await google.maps.importLibrary("marker");
 
     //Add Map to DOM
     map.current = new Map(document.getElementById("map"), {
@@ -188,13 +191,30 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
     //Add markers
+
     resultList.map((item, index) => {
-      var marker = new google.maps.Marker({
+      const icon = document.createElement("div");
+      icon.innerHTML = `<p class="font-sans text-beige-50 text-xs">${(
+        index + 1
+      ).toString()}</p>`;
+      const pinBackground = new google.maps.marker.PinElement({
+        background: "#3C0580",
+        borderColor: "#3C0580",
+        glyph: icon,
+        glyphColor: "#F1F0FF",
+      });
+      var marker = new google.maps.marker.AdvancedMarkerElement({
         position: {
           lat: item.geometry.location.lat(),
           lng: item.geometry.location.lng(),
         },
-        icon: pinIcon.src,
+        content: pinBackground.element,
+
+        // label: {
+        //   text: (index + 1).toString(),
+        //   className: "marker-label",
+        // },
+        // icon: pinIcon.src,
       });
 
       // To add the marker to the map, call setMap()

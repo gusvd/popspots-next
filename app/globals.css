@@ -29,3 +29,7 @@
 .pac-matched {
   @apply text-base font-semibold text-purple-800;
 }
+
+.marker-label {
+  @apply -mt-2 font-sans text-beige-50 !important;
+}
