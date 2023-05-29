@@ -30,7 +30,6 @@ const SearchForm = () => {
       const { Places } = await google.maps.importLibrary("places");
 
       //Add Autocomplete to DOM
-      const center = { lat: -34.397, lng: 150.644 };
       const input = document.getElementById("autocomplete");
       const options = {
         fields: ["geometry", "name"],
@@ -70,19 +69,23 @@ const SearchForm = () => {
 
   function searchPlaces() {
     /// check and assign location
-    const location = autocomplete.current.getPlace();
+    const placeAutocomlete = autocomplete.current.getPlace();
+
     let placeName, type, center, isGeolocation;
     let bounds = "";
     let ne = "";
     console.log("my location:", geolocationLat.current, geoLocationLng.current);
 
-    if (location) {
-      // const lat = location.geometry.location.lat();
-      // const lng = location.geometry.location.lng();
-      center = JSON.stringify(location.geometry.viewport.getCenter());
-      bounds = JSON.stringify(location.geometry.viewport);
+    if (placeAutocomlete) {
+      const locationCenter = {
+        lat: placeAutocomlete.geometry.location.lat(),
+        lng: placeAutocomlete.geometry.location.lng(),
+      };
+      console.log(locationCenter);
+      center = JSON.stringify(locationCenter);
+      bounds = JSON.stringify(placeAutocomlete.geometry.viewport);
       placeName = autocompleteInput.current.value;
-      ne = JSON.stringify(location.geometry.viewport.getNorthEast());
+      ne = JSON.stringify(placeAutocomlete.geometry.viewport.getNorthEast());
       isGeolocation = false;
     } else if (geolocationLat.current && geoLocationLng.current) {
       center = JSON.stringify({

@@ -25,6 +25,14 @@ const mapOptions = {
   gestureHandling: "cooperative",
 };
 
+const radiusSelectOptions = [
+  { value: 1000, label: "1 km" },
+  { value: 2000, label: "2 km" },
+  { value: 5000, label: "5 km" },
+  { value: 10000, label: "10 km" },
+  { value: 50000, label: "50 km" },
+];
+
 export default function ResultsPage() {
   const searchParams = useSearchParams();
   const searchName = searchParams.get("placeName");
@@ -51,6 +59,11 @@ export default function ResultsPage() {
   const [search, setSearch] = useState();
   const [searchMessage, setSearchMessage] = useState("");
   const [resultList, setResultList] = useState();
+  const [selectedRadius, setSelectedRadius] = useState({
+    value: 1000,
+    label: "1 km",
+  });
+  const radiusOverwrite = useRef(false);
 
   // ************************************ //
   // LOAD GOOGLE MAPS API
@@ -59,9 +72,13 @@ export default function ResultsPage() {
   useEffect(() => {
     async function init() {
       await loadGoogleMapsAPI();
-      loadInitialSearch();
+      // loadInitialSearch();
+      updateSearch();
     }
     init();
+    return () => {
+      clearGoogleEventListeners();
+    };
   }, []);
 
   async function loadGoogleMapsAPI() {
@@ -92,6 +109,18 @@ export default function ResultsPage() {
       types: ["geocode"],
     };
     autocomplete.current = new google.maps.places.Autocomplete(input, options);
+
+    await google.maps.event.addListener(
+      autocomplete.current,
+      "place_changed",
+      function () {
+        radiusOverwrite.current = false;
+      }
+    );
+  }
+
+  function clearGoogleEventListeners() {
+    google.maps.event.clearListeners(autocomplete.current, "place_changed");
   }
 
   // ************************************ //
@@ -165,33 +194,9 @@ export default function ResultsPage() {
     });
 
     // Add circle
-    let radius;
-    const center = search.request.location;
+    const circleCenter = search.request.location;
+    const circleRadius = search.request.radius;
     const mapCircle = map.current;
-    const location = autocomplete.current.getPlace();
-
-    if (!location) {
-      console.log("no location if statement yes", location);
-
-      radius = search.request.radius
-        ? search.request.radius
-        : google.maps.geometry.spherical.computeDistanceBetween(
-            center,
-            search.ne
-          );
-      map.current.setCenter(search.request.location);
-      map.current.setZoom(14);
-    } else {
-      radius = google.maps.geometry.spherical.computeDistanceBetween(
-        center,
-        search.ne
-      );
-      // Pan map to the location
-      // map.current.panTo(search.request.location); // center map on location
-      map.current.fitBounds(search.request.bounds); // fit map to bounds of the location
-      // map.current.fitBounds(circle.getBounds()); // fit map to bounds of the circle
-    }
-    console.log("circle radius", radius);
 
     circle.current = new google.maps.Circle({
       strokeColor: "#4C04A9",
@@ -200,22 +205,12 @@ export default function ResultsPage() {
       // fillColor: "#FF0000",
       fillOpacity: 0,
       mapCircle,
-      center: center,
-      radius: radius,
+      center: circleCenter,
+      radius: circleRadius,
     });
-    circle.current.setMap(map.current);
-
-    // TEST adds a rectangle with the bounds of the search
-    // const rectangle = new google.maps.Rectangle({
-    //   strokeColor: "#FF0000",
-    //   strokeOpacity: 0.2,
-    //   strokeWeight: 2,
-    //   fillColor: "#FF0000",
-    //   fillOpacity: 0.1,
-    //   mapCircle,
-    //   bounds: search.request.bounds,
-    // });
-    // rectangle.setMap(map.current);
+    circle.current.setMap(mapCircle);
+    map.current.setCenter(circleCenter);
+    map.current.fitBounds(circle.current.getBounds()); // fit map to bounds of the circle
 
     return () => {
       deleteMarkers();
@@ -259,70 +254,97 @@ export default function ResultsPage() {
   // HANDLES SEARCH
   // ************************************ //
 
-  // New search on button click
-  function handleNewSearch() {
-    let center, bounds, locationName, ne;
-    const location = autocomplete.current.getPlace();
-    if (location) {
-      center = {
-        lat: location.geometry.location.lat(),
-        lng: location.geometry.location.lng(),
-      };
-      bounds = location.geometry.viewport;
-      locationName = location.name;
-      ne = {
-        lat: location.geometry.viewport.getNorthEast().lat(),
-        lng: location.geometry.viewport.getNorthEast().lng(),
-      };
-    } else if (searchCenter) {
-      center = searchCenter;
-      locationName = searchName;
-      ne = searchNe;
-    } else {
-      center = null;
-    }
-    const type = locationType.current.getValue();
+  function updateSearch() {
+    const placeAutocomlete = autocomplete.current.getPlace();
+    const typeSelect = locationType.current.getValue();
+    let locationCenter,
+      locationtype,
+      locationRadius,
+      locationBonds,
+      locatioName,
+      locationNe;
 
-    if (!center) {
+    // If search exists we don't need to grab the information
+    // from the Query Params anymore.
+    if (search) {
+      if (typeSelect.length < 1) {
+        // User didn't enter a type of location
+        setSearchMessage("Please select a location type above");
+        return;
+      }
+      // If the Autocomplete has been set grab the information from it
+      // Otherwise use the previous information from the Search state
+      // This will happen when the location comes from the Search Params
+      // and the user searches again without slecting a new location from the autcomplete
+      if (placeAutocomlete) {
+        locationCenter = {
+          lat: placeAutocomlete.geometry.location.lat(),
+          lng: placeAutocomlete.geometry.location.lng(),
+        };
+        locatioName = placeAutocomlete.name;
+      } else {
+        locationCenter = search.request.location;
+        locatioName = search.locatioName;
+      }
+      // Set radius. Either from the Radius Select or
+      // from the bounds coming from the Autocomplete
+      locationRadius = radiusOverwrite.current
+        ? selectRadius.current.getValue()[0].value
+        : boundsToRadius(locationCenter, locationNe);
+      changeSelectedRadius(locationRadius);
+      locationtype = locationType.current.getValue()[0].value;
+      // If the search state hasn't been set up
+      // we grab the information from the Query Params
+    } else if (searchCenter) {
+      locationCenter = searchCenter;
+      locationtype = searchType;
+      locationRadius = selectRadius.current.getValue()[0].value;
+      locatioName = searchName;
+    } else {
       setSearchMessage("Please select a location above.");
       return;
     }
-    if (type.length < 1) {
-      setSearchMessage("Please select a location type above");
-      return;
-    }
-    setSearch({
+
+    const searchObject = {
       request: {
-        location: center,
-        type: [type[0].value],
-        ...(bounds
-          ? { bounds: bounds }
-          : { radius: selectRadius.current.getValue()[0].value }),
+        location: locationCenter,
+        type: locationtype,
+        radius: locationRadius,
+        // bonds: locationBonds,
       },
-      locatioName: locationName,
-      ne: ne,
-    });
+      locatioName: locatioName,
+      // ne: locationNe,
+    };
+
+    setSearch(searchObject);
   }
 
-  // Initial search from query string
-  function loadInitialSearch() {
-    const radius = selectRadius.current.getValue()[0].value;
-    const bounds = searchBounds;
-    setSearch({
-      request: {
-        location: searchCenter,
-        type: searchType,
-        ...(isGeolocation
-          ? { radius: radius } // set default radius from geolocation search
-          : { bounds: bounds }),
-      },
-      locatioName: searchName,
-      ne: searchNe,
-    });
+  // Convert Bounds to Radius
+  // and rounds the radius to the options available in the Radius dropdown
+  function boundsToRadius(center, ne) {
+    const radius = google.maps.geometry.spherical.computeDistanceBetween(
+      center,
+      ne
+    );
+    // rounds the bounds to the closest radius
+    const options = [1000, 2000, 5000, 10000, 20000, 50000]; // ideally this will grab the otions from the Select
+    let closestRadius = options.reduce((prev, curr) =>
+      Math.abs(curr - radius) < Math.abs(prev - radius) ? curr : prev
+    );
+    return closestRadius;
   }
 
-  // Set radius dropdown to the closet radius
-  function setRadiusDropdown(radius) {}
+  function changeSelectedRadius(radius) {
+    const selected = radiusSelectOptions.find(
+      (option) => option.value === radius
+    );
+    setSelectedRadius(selected);
+  }
+
+  function handleRadiusSelectChange(value) {
+    setSelectedRadius(value);
+    radiusOverwrite.current = true;
+  }
 
   // ************************************ //
   // COMPONENTS
@@ -395,7 +417,7 @@ export default function ResultsPage() {
 
               <a
                 className="bg-primary flex h-12 w-20 cursor-pointer place-content-center content-center items-center rounded-full rounded-l-none border-2 border-purple-800 bg-purple-800"
-                onClick={handleNewSearch}
+                onClick={updateSearch}
               >
                 <img className="h-7 items-center" src={SearchIcon.src} />
               </a>
@@ -419,14 +441,10 @@ export default function ResultsPage() {
                       : "text-purple-800 bg-white py-2 px-3",
                   singleValue: () => "text-purple-800",
                 }}
-                options={[
-                  { value: 1000, label: "1 km" },
-                  { value: 2000, label: "2 km" },
-                  { value: 5000, label: "5 km" },
-                  { value: 10000, label: "10 km" },
-                  { value: 50000, label: "50 km" },
-                ]}
-                defaultValue={{ value: 1000, label: "1 km" }}
+                options={radiusSelectOptions}
+                // defaultValue={{ value: 1000, label: "1 km" }}
+                value={selectedRadius}
+                onChange={handleRadiusSelectChange}
                 ref={selectRadius}
               />
               {/* </div> */}
