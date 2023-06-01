@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createRoot } from "react-dom/client";
 import { useSearchParams } from "next/navigation";
 import { Loader } from "@googlemaps/js-api-loader";
 import Select from "react-select";
@@ -15,7 +16,7 @@ let search = null;
 const mapOptions = {
   zoom: 4,
   clickableIcons: false,
-  // disableDefaultUI: true,
+  disableDefaultUI: true,
   zoomControl: true,
   mapTypeControl: false,
   scaleControl: false,
@@ -92,11 +93,11 @@ export default function ResultsPage() {
 
     // Load Libraries
     await loader.load();
-    const { Map } = await google.maps.importLibrary("maps");
+    const { Map, InfoWindow } = await google.maps.importLibrary("maps");
     const { Places } = await google.maps.importLibrary("places");
     const { Geometry } = await google.maps.importLibrary("geometry");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-    const { PinElement } = await google.maps.importLibrary("marker");
+    // const { PinElement } = await google.maps.importLibrary("marker");
 
     //Add Map to DOM
     map.current = new Map(document.getElementById("map"), {
@@ -192,37 +193,31 @@ export default function ResultsPage() {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
     //Add markers
 
-    resultList.map((item, index) => {
-      const icon = document.createElement("div");
-      icon.innerHTML = `<p class="font-sans text-beige-50 text-xs">${(
-        index + 1
-      ).toString()}</p>`;
-      const pinBackground = new google.maps.marker.PinElement({
-        background: "#3C0580",
-        borderColor: "#3C0580",
-        glyph: icon,
-        glyphColor: "#F1F0FF",
-      });
-      var marker = new google.maps.marker.AdvancedMarkerElement({
-        position: {
-          lat: item.geometry.location.lat(),
-          lng: item.geometry.location.lng(),
-        },
-        content: pinBackground.element,
+    // resultList.map((item, index) => {
+    //   const icon = document.createElement("div");
+    //   icon.innerHTML = `<p class="font-sans text-beige-50 text-xs">${(
+    //     index + 1
+    //   ).toString()}</p>`;
+    //   const pinBackground = new google.maps.marker.PinElement({
+    //     background: "#3C0580",
+    //     borderColor: "#3C0580",
+    //     glyph: icon,
+    //     glyphColor: "#F1F0FF",
+    //   });
+    //   var marker = new google.maps.marker.AdvancedMarkerElement({
+    //     position: {
+    //       lat: item.geometry.location.lat(),
+    //       lng: item.geometry.location.lng(),
+    //     },
+    //     content: pinBackground.element,
+    //   });
 
-        // label: {
-        //   text: (index + 1).toString(),
-        //   className: "marker-label",
-        // },
-        // icon: pinIcon.src,
-      });
+    //   // To add the marker to the map, call setMap()
+    //   marker.setMap(map.current);
 
-      // To add the marker to the map, call setMap()
-      marker.setMap(map.current);
-
-      // To add the marker to the markers Ref so it can be used dynamically
-      markers.current.push(marker);
-    });
+    //   // To add the marker to the markers Ref so it can be used dynamically
+    //   markers.current.push(marker);
+    // });
 
     // Add circle
     const circleCenter = search.request.location;
@@ -239,7 +234,7 @@ export default function ResultsPage() {
       center: circleCenter,
       radius: circleRadius,
     });
-    circle.current.setMap(mapCircle);
+    // circle.current.setMap(mapCircle);
     map.current.setCenter(circleCenter);
     map.current.fitBounds(circle.current.getBounds()); // fit map to bounds of the circle
 
@@ -499,9 +494,100 @@ export default function ResultsPage() {
           </div>
           <div className="col h-full w-2/5 px-0">
             <div className="h-full w-full" id="map"></div>
+            {resultList &&
+              resultList.map((item, index) => {
+                return (
+                  <CustomMarker
+                    key={index}
+                    index={index}
+                    item={item}
+                    map={map.current}
+                  ></CustomMarker>
+                );
+              })}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function CustomMarker({ index, item, map, children }) {
+  const [highlight, setHighlight] = useState(null);
+  const markersRef = useRef([]);
+  const rootRef = useRef();
+
+  function handleMarkerMouseOver() {
+    setHighlight(index);
+  }
+
+  function handleMarkerMouseOut() {
+    setHighlight(null);
+  }
+
+  const markerDiv = (
+    <div className="flex flex-col items-center">
+      <div
+        className={`mb-1 rounded-full bg-white p-2 ${
+          highlight !== index && "hidden"
+        }`}
+      >
+        <p>1. Restaurant name</p>
+      </div>
+      <div
+        className="relative transition-transform hover:scale-110"
+        onMouseEnter={() => handleMarkerMouseOver()}
+        onMouseLeave={() => handleMarkerMouseOut()}
+      >
+        <p className="absolute inset-x-0 top-1 text-center font-sans text-xs text-beige-50">
+          {index + 1}
+        </p>
+        <img className="" src={pinIcon.src} />
+      </div>
+    </div>
+  );
+
+  useEffect(() => {
+    const container = document.createElement("div");
+    rootRef.current = createRoot(container);
+
+    // Create an info window to share between markers.
+    // const infoWindow = new google.maps.InfoWindow();
+
+    const marker = new google.maps.marker.AdvancedMarkerElement({
+      position: {
+        lat: item.geometry.location.lat(),
+        lng: item.geometry.location.lng(),
+      },
+      map,
+      content: container,
+    });
+
+    rootRef.current.render(markerDiv);
+
+    // The event listener is necessary to make the markers interactable
+    // Little hack but without it the markers won't respond to mouse events
+    marker.addListener("click", () => {
+      // infoWindow.close();
+      // const content = `${index}. ${item.name}`;
+      // infoWindow.setContent(content);
+      // infoWindow.open(marker.map, marker);
+    });
+
+    // Add to the array so it can be cleaned later
+    markersRef.current.push(marker);
+
+    return () => {
+      clearMarkers();
+    };
+  }, [item, highlight]);
+
+  function clearMarkers() {
+    for (let i = 0; i < markersRef.current.length; i++) {
+      markersRef.current[i].setMap(null);
+    }
+    markersRef.current = [];
+  }
+
+  return null;
 }
