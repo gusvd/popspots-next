@@ -513,37 +513,20 @@ export default function ResultsPage() {
 }
 
 function CustomMarker({ index, item, map, children }) {
-  const [highlight, setHighlight] = useState(null);
   const markersRef = useRef([]);
   const rootRef = useRef();
 
-  function handleMarkerMouseOver() {
-    setHighlight(index);
-  }
-
-  function handleMarkerMouseOut() {
-    setHighlight(null);
-  }
-
   const markerDiv = (
-    <div className="flex flex-col items-center">
-      <div
-        className={`mb-1 rounded-full bg-white p-2 ${
-          highlight !== index && "hidden"
-        }`}
-      >
-        <p>1. Restaurant name</p>
+    <div className="group relative transition-transform hover:z-50 hover:scale-110">
+      <div className="absolute -top-3/4 left-1/2 hidden -translate-x-1/2 rounded-full bg-white p-2 group-hover:block">
+        <p className="max-w-[10rem] truncate whitespace-nowrap">{`${
+          index + 1
+        }. ${item.name}`}</p>
       </div>
-      <div
-        className="relative transition-transform hover:scale-110"
-        onMouseEnter={() => handleMarkerMouseOver()}
-        onMouseLeave={() => handleMarkerMouseOut()}
-      >
-        <p className="absolute inset-x-0 top-1 text-center font-sans text-xs text-beige-50">
-          {index + 1}
-        </p>
-        <img className="" src={pinIcon.src} />
-      </div>
+      <p className="absolute inset-x-0 top-1 text-center font-sans text-xs text-beige-50">
+        {index + 1}
+      </p>
+      <img className="" src={pinIcon.src} />
     </div>
   );
 
@@ -580,7 +563,7 @@ function CustomMarker({ index, item, map, children }) {
     return () => {
       clearMarkers();
     };
-  }, [item, highlight]);
+  }, [item]);
 
   function clearMarkers() {
     for (let i = 0; i < markersRef.current.length; i++) {
