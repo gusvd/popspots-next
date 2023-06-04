@@ -29,7 +29,7 @@ export default [
   { value: "park", label: "Parks" },
   { value: "parking", label: "Parkings" },
   { value: "pet_store", label: "Pet Shops" },
-  { value: "pharmacy", label: "Pharmacys" },
+  { value: "pharmacy", label: "Pharmacies" },
   { value: "restaurant", label: "Restaurants" },
   { value: "school", label: "Schools" },
   { value: "supermarket", label: "Supermarkets" },

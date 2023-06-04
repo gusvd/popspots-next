@@ -7,16 +7,18 @@ const MapComponent = () => {
   const mapContainer = useRef();
 
   const mapOptions = {
-    zoom: 4,
+    zoom: 13,
     clickableIcons: false,
-    // disableDefaultUI: true,
-    zoomControl: true,
-    mapTypeControl: false,
-    scaleControl: false,
-    streetViewControl: false,
-    rotateControl: false,
-    fullscreenControl: false,
+    disableDefaultUI: true,
+    disableDoubleClickZoom: true,
+    // zoomControl: true,
+    // mapTypeControl: false,
+    // scaleControl: false,
+    // streetViewControl: false,
+    // rotateControl: false,
+    // fullscreenControl: false,
     gestureHandling: "cooperative",
+    mapId: "92d1a48ec4b0d2cc",
   };
 
   // LOAD GOOGLE MAPS API
@@ -32,12 +34,12 @@ const MapComponent = () => {
 
     //Add Map to DOM
     googlemap.current = new Map(document.getElementById("map"), {
-      center: { lat: -34.397, lng: 150.644 },
+      center: { lat: 51.4572, lng: 0.1277 },
       ...mapOptions,
     });
   });
 
-  return <div className="w-full h-full" id="map"></div>;
+  return <div className="h-full w-full " id="map"></div>;
 };
 
 export default MapComponent;

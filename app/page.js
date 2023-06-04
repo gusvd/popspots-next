@@ -1,38 +1,79 @@
-import SearchForm from "./components/search";
-import MapComponent from "./components/map";
+import SearchForm from "./components/Search";
+import MapComponent from "./components/Map";
+import Gallery from "./components/Gallery";
+import Link from "next/link";
 
 import PopSpotsLogo from "../public/popspots-logo.svg";
+import BirdIcon from "../public/bird-icon.svg";
+import RestaurantsImg from "../public/restaurants.jpg";
+import HotelsImg from "../public/hotel.jpg";
 
 let search = null;
 
 export default function HomePage() {
   return (
     <div className="App">
-      <div className="container h-[46rem] max-w-7xl px-0">
-        <div className="row mx-0 flex h-full">
-          <div className="col w-3/5 px-20 py-16 lg:flex lg:flex-col lg:gap-y-12">
-            <img className="w-28" src={PopSpotsLogo.src} />
-            <div>
-              <h1 className="text-5xl leading-tight font-semibold">
-                Find the most popular places near you.
-                <br />
-                Or anywhere else.
-              </h1>
-              <p className="mt-4 text-lg font-normal">
-                Popular places are not always the best. <br />
-                But the best places are naturally more popular.
-              </p>
-            </div>
-            <div className="lg:flex lg:flex-col lg:max-w-sm lg:gap-y-4">
-              {/* Search form component */}
-              <SearchForm />
-            </div>
+      <div className="mx-auto flex h-full max-w-7xl bg-gradient-to-t from-beige-100 to-beige-50">
+        {/* Left column */}
+        <div className="flex flex-col gap-y-12 px-6 py-16 md:w-3/5 md:px-20">
+          <div className="flex flex-row justify-between">
+            <img className="w-32" src={PopSpotsLogo.src} />
+            <Link
+              href={"https://twitter.com/GusvDias"}
+              target="_blank"
+              className="felx-row flex items-center gap-1 rounded-full bg-beige-100 px-4 py-2 text-xs text-purple-900 transition-colors hover:bg-beige-200"
+            >
+              <img className="h-3" src={BirdIcon.src} />
+              @gusvdias
+            </Link>
           </div>
-          <div className="col h-full w-2/5 px-0">
-            <MapComponent />
+          <div>
+            <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
+              Find the most{" "}
+              <span className="bg-gradient-to-t from-purple-900 to-purple-300 bg-clip-text text-transparent">
+                popular places
+              </span>{" "}
+              near you. Or anywhere else.
+            </h1>
+            <p className="mt-4 text-base font-normal md:text-lg">
+              Popular places are not always the best. <br />
+              But the best places are naturally more popular.
+            </p>
+          </div>
+          <div className="flex flex-col gap-y-4 md:max-w-sm">
+            {/* Search form component */}
+            <SearchForm />
+          </div>
+        </div>
+        <div className="relative hidden w-2/5 px-0 md:block">
+          <MapComponent />
+          <div className="absolute  top-0 h-full w-full bg-beige-200 mix-blend-hue"></div>
+          <div className="absolute top-0 flex h-full w-full flex-col justify-between p-20">
+            <div className="relative w-40 grow-0 rounded-2xl bg-purple-800 p-2 text-beige-50">
+              <img
+                className="h-20 w-full rounded-xl"
+                src={RestaurantsImg.src}
+              />
+              <div className="absolute -bottom-4 right-8 h-4 w-4 origin-top-left -rotate-45 transform bg-purple-800"></div>
+              <p className="mt-2 w-full text-center">Restaurants</p>
+            </div>
+            <div className="relative w-40 grow-0 self-end rounded-full bg-purple-800 p-2 text-beige-50">
+              <div className="absolute -bottom-4 right-8 h-4 w-4 origin-top-left -rotate-45 transform bg-purple-800"></div>
+              <p className="w-full text-center">Pet Shops</p>
+            </div>
+            <div className="relative w-40 grow-0 self-center rounded-2xl bg-purple-800 p-2 text-beige-50">
+              <img className="h-20 w-full rounded-xl" src={HotelsImg.src} />
+              <div className="absolute -bottom-4 right-8 h-4 w-4 origin-top-left -rotate-45 transform bg-purple-800"></div>
+              <p className="mt-2 w-full text-center">Hotels</p>
+            </div>
+            <div className="relative w-40 grow-0 rounded-full bg-purple-800 p-2 text-beige-50">
+              <div className="absolute -bottom-4 right-8 h-4 w-4 origin-top-left -rotate-45 transform bg-purple-800"></div>
+              <p className="w-full text-center">Attractions</p>
+            </div>
           </div>
         </div>
       </div>
+      <Gallery />
     </div>
   );
 }

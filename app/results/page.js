@@ -185,39 +185,12 @@ export default function ResultsPage() {
   };
 
   // ************************************ //
-  // MAP UPDATE & ADD MARKER FUNCTIONS
+  // MAP UPDATE, ADD CIRCLE, ZOOM TO FIT CIRCLE
   // ************************************ //
 
-  // Updates map and markers every time the Search Result state changes
+  // Updates map every time the Search Result state changes
   useEffect(() => {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
-    //Add markers
-
-    // resultList.map((item, index) => {
-    //   const icon = document.createElement("div");
-    //   icon.innerHTML = `<p class="font-sans text-beige-50 text-xs">${(
-    //     index + 1
-    //   ).toString()}</p>`;
-    //   const pinBackground = new google.maps.marker.PinElement({
-    //     background: "#3C0580",
-    //     borderColor: "#3C0580",
-    //     glyph: icon,
-    //     glyphColor: "#F1F0FF",
-    //   });
-    //   var marker = new google.maps.marker.AdvancedMarkerElement({
-    //     position: {
-    //       lat: item.geometry.location.lat(),
-    //       lng: item.geometry.location.lng(),
-    //     },
-    //     content: pinBackground.element,
-    //   });
-
-    //   // To add the marker to the map, call setMap()
-    //   marker.setMap(map.current);
-
-    //   // To add the marker to the markers Ref so it can be used dynamically
-    //   markers.current.push(marker);
-    // });
 
     // Add circle
     const circleCenter = search.request.location;
@@ -234,46 +207,18 @@ export default function ResultsPage() {
       center: circleCenter,
       radius: circleRadius,
     });
-    // circle.current.setMap(mapCircle);
+    circle.current.setMap(mapCircle);
     map.current.setCenter(circleCenter);
     map.current.fitBounds(circle.current.getBounds()); // fit map to bounds of the circle
 
     return () => {
-      deleteMarkers();
       deleteCircle();
     };
   }, [resultList]);
 
-  // Deletes all markers
-  const deleteMarkers = () => {
-    for (let i = 0; i < markers.current.length; i++) {
-      markers.current[i].setMap(null);
-    }
-    markers.current = [];
-  };
-
   // Deletes circle
   const deleteCircle = () => {
     circle.current.setMap(null);
-  };
-
-  // Highlight marker on Hover of the Result Card
-  const selectMarker = (marker) => {
-    if (markers.current.length < 1) return;
-    for (let i = 0; i < markers.current.length; i++) {
-      markers.current[i].setMap(null);
-    }
-    markers.current[marker].setMap(map.current);
-    map.current.panTo(markers.current[marker].position);
-    map.current.setZoom(14);
-  };
-
-  // Show all markers / When mouse rolls out of result cards
-  const showAllMarkers = () => {
-    for (let i = 0; i < markers.current.length; i++) {
-      markers.current[i].setMap(map.current);
-    }
-    map.current.fitBounds(search.request.bounds);
   };
 
   // ************************************ //
@@ -397,8 +342,6 @@ export default function ResultsPage() {
           ratings={item.rating}
           placeID={item.place_id}
           address={item.vicinity}
-          selectMarker={selectMarker}
-          showAllMarkers={showAllMarkers}
         />
       );
     });
@@ -408,104 +351,102 @@ export default function ResultsPage() {
   // ************************************ //
   return (
     <div className="App">
-      <div className="container h-[46rem] max-w-7xl px-0">
-        <div className="row mx-0 flex h-full">
-          <div className="col w-3/5 px-20 py-16 lg:flex lg:flex-col lg:gap-y-6">
-            <div>
-              <img className="w-28" src={PopSpotsLogo.src} />
-            </div>
-            <div className="w-full lg:flex lg:flex-row">
-              {/* Location search box ---- */}
-              <input
-                id="autocomplete"
-                name="location"
-                className="h-12 flex-1 rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 text-purple-800 placeholder:text-purple-800"
-                type="text"
-                placeholder="Location"
-                defaultValue={searchName}
-              />
-              {/* Type search box ---- */}
-              <Select
-                unstyled
-                instanceId="typeselect"
-                placeholder="Type"
-                classNames={{
-                  container: () => "h-12 flex-1",
-                  control: () =>
-                    "h-12 px-6 border-2 border-r-0 border-purple-800 bg-white",
-                  placeholder: () => "text-purple-800",
-                  dropdownIndicator: () => "text-purple-800",
-                  menu: () => "bg-white py-3 shadow-md",
-                  option: (state) =>
-                    state.isFocused
-                      ? "bg-purple-100 text-purple-800 py-2 px-3"
-                      : "text-purple-800 bg-white py-2 px-3",
-                  singleValue: () => "text-purple-800",
-                }}
-                options={locationTypes}
-                defaultValue={
-                  locationTypes.filter((type) => type.value === searchType)[0]
-                }
-                ref={locationType}
-              />
-              {/* Search button ---- */}
+      <div className="max-w-7xl md:flex">
+        {/* LEFT COLUMN ---- */}
+        <div className="flex flex-col gap-y-6 px-6 py-16 md:w-3/5 lg:px-20">
+          <div>
+            <img className="w-32" src={PopSpotsLogo.src} />
+          </div>
+          <div className="flex w-full flex-row">
+            {/* Location search box ---- */}
+            <input
+              id="autocomplete"
+              name="location"
+              className="h-12 flex-1 rounded-full rounded-r-none border-2 border-r-0 border-purple-800 px-6 text-purple-800 placeholder:text-purple-800"
+              type="text"
+              placeholder="Location"
+              defaultValue={searchName}
+            />
+            {/* Type search box ---- */}
+            <Select
+              unstyled
+              instanceId="typeselect"
+              placeholder="Type"
+              classNames={{
+                container: () => "h-12 flex-1",
+                control: () =>
+                  "h-12 px-6 border-2 border-r-0 border-purple-800 bg-white",
+                placeholder: () => "text-purple-800",
+                dropdownIndicator: () => "text-purple-800",
+                menu: () => "bg-white py-3 shadow-md",
+                option: (state) =>
+                  state.isFocused
+                    ? "bg-purple-100 text-purple-800 py-2 px-3"
+                    : "text-purple-800 bg-white py-2 px-3",
+                singleValue: () => "text-purple-800",
+              }}
+              options={locationTypes}
+              defaultValue={
+                locationTypes.filter((type) => type.value === searchType)[0]
+              }
+              ref={locationType}
+            />
+            {/* Search button ---- */}
 
-              <a
-                className="flex h-12 w-20 flex-none cursor-pointer place-content-center content-center items-center rounded-full rounded-l-none border-2 border-purple-800 bg-purple-800"
-                onClick={updateSearch}
-              >
-                <img className="h-7 items-center" src={SearchIcon.src} />
-              </a>
-            </div>
-            {/*  Radius Select */}
-            <div className="-mt-4 flex flex-row items-center">
-              <p className="grow text-right text-sm text-purple-800">Radius:</p>
-              {/* <div className="w-20"> */}
-              <Select
-                unstyled
-                instanceId="radius"
-                classNames={{
-                  container: () => "text-sm",
-                  control: () => "px-3",
-                  placeholder: () => "text-purple-800",
-                  dropdownIndicator: () => "text-purple-800",
-                  menu: () => "bg-white py-3 shadow-md",
-                  option: (state) =>
-                    state.isFocused
-                      ? "bg-purple-100 text-purple-800 py-2 px-3"
-                      : "text-purple-800 bg-white py-2 px-3",
-                  singleValue: () => "text-purple-800",
-                }}
-                options={radiusSelectOptions}
-                // defaultValue={{ value: 1000, label: "1 km" }}
-                value={selectedRadius}
-                onChange={handleRadiusSelectChange}
-                ref={selectRadius}
-              />
-              {/* </div> */}
-            </div>
-            <div>
-              {/* Search summary ---- */}
-              <p className="pb-6 text-beige-900">{searchMessage}</p>
-              <div className="grid grid-cols-3 gap-6 after:flex-auto after:content-['']">
-                {ResultCards}
-              </div>
+            <a
+              className="flex h-12 w-20 flex-none cursor-pointer place-content-center content-center items-center rounded-full rounded-l-none border-2 border-purple-800 bg-purple-800"
+              onClick={updateSearch}
+            >
+              <img className="h-7 items-center" src={SearchIcon.src} />
+            </a>
+          </div>
+          {/*  Radius Select */}
+          <div className="-mt-4 flex flex-row items-center">
+            <p className="grow text-right text-sm text-purple-800">Radius:</p>
+            <Select
+              unstyled
+              instanceId="radius"
+              classNames={{
+                container: () => "text-sm",
+                control: () => "px-3",
+                placeholder: () => "text-purple-800",
+                dropdownIndicator: () => "text-purple-800",
+                menu: () => "bg-white py-3 shadow-md",
+                option: (state) =>
+                  state.isFocused
+                    ? "bg-purple-100 text-purple-800 py-2 px-3"
+                    : "text-purple-800 bg-white py-2 px-3",
+                singleValue: () => "text-purple-800",
+              }}
+              options={radiusSelectOptions}
+              value={selectedRadius}
+              onChange={handleRadiusSelectChange}
+              ref={selectRadius}
+            />
+            {/* </div> */}
+          </div>
+          <div>
+            {/* Search summary ---- */}
+            <p className="pb-6 text-beige-900">{searchMessage}</p>
+            <div className="grid grid-cols-3 gap-6 after:flex-auto md:grid-cols-2 lg:grid-cols-3">
+              {ResultCards}
             </div>
           </div>
-          <div className="col h-full w-2/5 px-0">
-            <div className="h-full w-full" id="map"></div>
-            {resultList &&
-              resultList.map((item, index) => {
-                return (
-                  <CustomMarker
-                    key={index}
-                    index={index}
-                    item={item}
-                    map={map.current}
-                  ></CustomMarker>
-                );
-              })}
-          </div>
+        </div>
+        {/* MAP RIGHT COLUMN ---- */}
+        <div className="col sticky top-0 h-screen w-2/5 px-0">
+          <div className="h-full w-full" id="map"></div>
+          {resultList &&
+            resultList.map((item, index) => {
+              return (
+                <CustomMarker
+                  key={index}
+                  index={index}
+                  item={item}
+                  map={map.current}
+                ></CustomMarker>
+              );
+            })}
         </div>
       </div>
     </div>

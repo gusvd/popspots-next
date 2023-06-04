@@ -118,7 +118,7 @@ const SearchForm = () => {
       <input
         id="autocomplete"
         name="location"
-        className="form-input h-12 grow rounded-full border-2 border-purple-800 px-6 placeholder:text-purple-800"
+        className="h-12 grow rounded-full border-2 border-purple-800 px-6 text-purple-800 placeholder:text-purple-800"
         type="text"
         placeholder="Location"
         ref={autocompleteInput}
@@ -147,7 +147,7 @@ const SearchForm = () => {
       {/* Search button ---- */}
       <button
         onClick={searchPlaces}
-        className="bg-primary flex h-12 cursor-pointer place-content-center content-center items-center gap-x-2 rounded-full border-2 border-purple-800 bg-purple-800"
+        className="bg-primary flex h-12 cursor-pointer place-content-center content-center items-center gap-x-2 rounded-full border-2 border-purple-800 bg-purple-800 transition-colors hover:bg-purple-900"
       >
         <img className="h-7 items-center" src={SearchIcon.src} />
         <p className="text-white">Search</p>
