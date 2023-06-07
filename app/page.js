@@ -1,10 +1,8 @@
 import SearchForm from "./components/Search";
 import MapComponent from "./components/Map";
 import Gallery from "./components/Gallery";
-import Link from "next/link";
+import LogoHeader from "./components/LogoHeader";
 
-import PopSpotsLogo from "../public/popspots-logo.svg";
-import BirdIcon from "../public/bird-icon.svg";
 import RestaurantsImg from "../public/restaurants.jpg";
 import HotelsImg from "../public/hotel.jpg";
 
@@ -16,17 +14,7 @@ export default function HomePage() {
       <div className="mx-auto flex h-full max-w-7xl bg-gradient-to-t from-beige-100 to-beige-50">
         {/* Left column */}
         <div className="flex flex-col gap-y-12 px-6 py-16 md:w-3/5 md:px-20">
-          <div className="flex flex-row justify-between">
-            <img className="w-32" src={PopSpotsLogo.src} />
-            <Link
-              href={"https://twitter.com/GusvDias"}
-              target="_blank"
-              className="felx-row flex items-center gap-1 rounded-full bg-beige-100 px-4 py-2 text-xs text-purple-900 transition-colors hover:bg-beige-200"
-            >
-              <img className="h-3" src={BirdIcon.src} />
-              @gusvdias
-            </Link>
-          </div>
+          <LogoHeader />
           <div>
             <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
               Find the most{" "}

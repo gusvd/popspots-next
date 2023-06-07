@@ -11,15 +11,19 @@ import SupermarketsImg from "./supermarkets.svg";
 import AttractionsImg from "./tourism.svg";
 
 export default [
-  { name: "Art Galleries", icon: GalleryImg.src },
-  { name: "Bakeries", icon: BakeriesImg.src },
-  { name: "Bars", icon: BarsImg.src },
-  { name: "Beauty Salons", icon: SalonsImg.src },
-  { name: "Cafes", icon: CafesImg.src },
-  { name: "Gyms", icon: GymsImg.src },
-  { name: "Night Clubs", icon: ClubsImg.src },
-  { name: "Parks", icon: ParksImg.src },
-  { name: "Restaurants", icon: RestaurantsImg.src },
-  { name: "Supermarkets", icon: SupermarketsImg.src },
-  { name: "Attractions", icon: AttractionsImg.src },
+  { name: "Art Galleries", value: "art_gallery", icon: GalleryImg.src },
+  { name: "Bakeries", value: "bakery", icon: BakeriesImg.src },
+  { name: "Bars", value: "bar", icon: BarsImg.src },
+  { name: "Beauty Salons", value: "beauty_salon", icon: SalonsImg.src },
+  { name: "Cafes", value: "cafe", icon: CafesImg.src },
+  { name: "Gyms", value: "gym", icon: GymsImg.src },
+  { name: "Night Clubs", value: "night_club", icon: ClubsImg.src },
+  { name: "Parks", value: "park", icon: ParksImg.src },
+  { name: "Restaurants", value: "restaurant", icon: RestaurantsImg.src },
+  { name: "Supermarkets", value: "supermarket", icon: SupermarketsImg.src },
+  {
+    name: "Attractions",
+    value: "tourist_attraction",
+    icon: AttractionsImg.src,
+  },
 ];

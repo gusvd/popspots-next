@@ -5,9 +5,11 @@ import { useSearchParams } from "next/navigation";
 import { Loader } from "@googlemaps/js-api-loader";
 import Select from "react-select";
 
-import PopSpotsLogo from "../../public/popspots-logo.svg";
+import LogoHeader from "../components/LogoHeader";
 import SearchIcon from "../../public/icon-search.svg";
 import pinIcon from "../../public/pin.svg";
+import mapIcon from "../../public/map-toggle-icon.svg";
+import listIcon from "../../public/list-toggle-icon.svg";
 import locationTypes from "../../public/locationTypes.js";
 import ResultCard from "./ResultCard.js";
 
@@ -66,6 +68,7 @@ export default function ResultsPage() {
     label: "1 km",
   });
   const radiusOverwrite = useRef(false);
+  const [mapVisible, setMapVisible] = useState(false);
 
   // ************************************ //
   // LOAD GOOGLE MAPS API
@@ -265,8 +268,6 @@ export default function ResultsPage() {
       }
       // Set radius. Either from the Radius Select or
       // from the bounds coming from the Autocomplete
-      console.log("radius calc", locationCenter, locationNe);
-
       locationRadius = radiusOverwrite.current
         ? selectRadius.current.getValue()[0].value
         : boundsToRadius(locationCenter, locationNe);
@@ -277,9 +278,10 @@ export default function ResultsPage() {
     } else if (searchCenter) {
       locationCenter = searchCenter;
       locationtype = searchType;
-      locationRadius = selectRadius.current.getValue()[0].value;
       locatioName = searchName;
       locationNe = searchNe;
+      // locationRadius = selectRadius.current.getValue()[0].value;
+      locationRadius = boundsToRadius(locationCenter, locationNe);
     } else {
       setSearchMessage("Please select a location above.");
       return;
@@ -290,7 +292,7 @@ export default function ResultsPage() {
         location: locationCenter,
         type: locationtype,
         radius: locationRadius,
-        bonds: locationBonds,
+        // bonds: locationBonds,
       },
       locatioName: locatioName,
       ne: locationNe,
@@ -351,13 +353,11 @@ export default function ResultsPage() {
   // ************************************ //
   return (
     <div className="App">
-      <div className="max-w-7xl md:flex">
+      <div className="relative flex h-screen max-w-7xl flex-col md:h-auto md:flex-row">
         {/* LEFT COLUMN ---- */}
-        <div className="flex flex-col gap-y-6 px-6 py-16 md:w-3/5 lg:px-20">
-          <div>
-            <img className="w-32" src={PopSpotsLogo.src} />
-          </div>
-          <div className="flex w-full flex-row">
+        <div className="flex flex-col gap-y-6 px-6 pb-0 pt-16 md:w-3/5 md:py-16 lg:px-20">
+          <LogoHeader />
+          <div className="mt-2 flex w-full flex-row">
             {/* Location search box ---- */}
             <input
               id="autocomplete"
@@ -428,14 +428,23 @@ export default function ResultsPage() {
           <div>
             {/* Search summary ---- */}
             <p className="pb-6 text-beige-900">{searchMessage}</p>
-            <div className="grid grid-cols-3 gap-6 after:flex-auto md:grid-cols-2 lg:grid-cols-3">
+            {/* Search results ---- */}
+            <div
+              className={`grid-cols-2 gap-6 sm:grid-cols-3 md:grid md:grid-cols-2 lg:grid-cols-3 ${
+                mapVisible ? "hidden" : "grid"
+              }`}
+            >
               {ResultCards}
             </div>
           </div>
         </div>
         {/* MAP RIGHT COLUMN ---- */}
-        <div className="col sticky top-0 h-screen w-2/5 px-0">
-          <div className="h-full w-full" id="map"></div>
+        <div
+          className={`grow px-0 md:sticky md:top-0 md:block md:h-screen md:w-2/5 md:flex-grow-0 ${
+            !mapVisible && "hidden"
+          }`}
+        >
+          <div id="map" className="h-full w-full bg-purple-400"></div>
           {resultList &&
             resultList.map((item, index) => {
               return (
@@ -447,6 +456,19 @@ export default function ResultsPage() {
                 ></CustomMarker>
               );
             })}
+        </div>
+        {/* Toggle button Map:List */}
+        <div className="pointer-events-none fixed bottom-7 flex w-full justify-center md:hidden">
+          <div
+            className="pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full bg-purple-900 px-6 py-3"
+            onClick={() => setMapVisible((prevMapVisible) => !prevMapVisible)}
+          >
+            <img
+              className="h-4"
+              src={mapVisible ? listIcon.src : mapIcon.src}
+            />
+            <p className="text-beige-50">{mapVisible ? "List" : "Map"}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -474,9 +496,6 @@ function CustomMarker({ index, item, map, children }) {
   useEffect(() => {
     const container = document.createElement("div");
     rootRef.current = createRoot(container);
-
-    // Create an info window to share between markers.
-    // const infoWindow = new google.maps.InfoWindow();
 
     const marker = new google.maps.marker.AdvancedMarkerElement({
       position: {

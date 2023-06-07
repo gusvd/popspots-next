@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import Categories from "../../public/categoriesGallery";
+import categories from "../../public/categoriesGallery";
 import arrowRight from "../../public/arrow-right.svg";
 import citiesList from "../../public/featuredCities";
 import icon from "../../public/popspots-icon.svg";
@@ -70,7 +70,7 @@ const Gallery = () => {
         </div>
       </div>
       <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-6">
-        <FeaturedCities />
+        <FeaturedCities typeIndex={selected} categories={categories} />
       </div>
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
         <h2 className="text-4xl font-semibold text-purple-800 md:text-5xl">
@@ -102,7 +102,7 @@ const Gallery = () => {
 };
 
 const CategoriesMenu = ({ selectCategory, selected }) => {
-  return Categories.map((category, index) => {
+  return categories.map((category, index) => {
     return (
       <li
         key={index}
@@ -118,14 +118,23 @@ const CategoriesMenu = ({ selectCategory, selected }) => {
   });
 };
 
-const FeaturedCities = () => {
+const FeaturedCities = ({ typeIndex, categories }) => {
   return citiesList.map((city, index) => {
     return (
-      <Link href="/" className="group h-full" key={index}>
+      // QUERY: `?placeName=${placeName}&locationType=${type}&center=${center}&bounds=${bounds}&ne=${ne}&isGeolocation=${isGeolocation}`;
+      <Link
+        href={`results/?placeName=${city.name}&locationType=${
+          categories[typeIndex].value
+        }&center=${JSON.stringify(city.center)}&bounds=${JSON.stringify(
+          city.bounds
+        )}&ne=${JSON.stringify(city.ne)}`}
+        className="group h-full"
+        key={index}
+      >
         <div className="h-24 overflow-hidden rounded-2xl md:h-32">
           <img
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            src={city.icon}
+            src={city.image}
           />
         </div>
         <p className="mt-3 text-purple-800 group-hover:underline">
