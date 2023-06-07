@@ -196,8 +196,8 @@ export default function ResultsPage() {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
 
     // Add circle
-    const circleCenter = search.request.location;
-    const circleRadius = search.request.radius;
+    const circleCenter = search.location;
+    const circleRadius = search.radius;
     const mapCircle = map.current;
 
     circle.current = new google.maps.Circle({
@@ -214,8 +214,20 @@ export default function ResultsPage() {
     map.current.setCenter(circleCenter);
     map.current.fitBounds(circle.current.getBounds()); // fit map to bounds of the circle
 
+    // rectangle to test bounds
+    const rectangle = new google.maps.Rectangle({
+      strokeColor: "#FF0000",
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: "#FF0000",
+      fillOpacity: 0.35,
+      bounds: search.request.bounds,
+    });
+    rectangle.setMap(mapCircle);
+
     return () => {
       deleteCircle();
+      rectangle.setMap(null);
     };
   }, [resultList]);
 
@@ -252,17 +264,21 @@ export default function ResultsPage() {
       // and the user searches again without slecting a new location from the autcomplete
 
       if (placeAutocomlete) {
-        locationCenter = {
-          lat: placeAutocomlete.geometry.location.lat(),
-          lng: placeAutocomlete.geometry.location.lng(),
-        };
+        console.log("autocomplete", placeAutocomlete.geometry.viewport);
+        // locationCenter = {
+        //   lat: placeAutocomlete.geometry.location.lat(),
+        //   lng: placeAutocomlete.geometry.location.lng(),
+        // };
+        locationCenter = placeAutocomlete.geometry.viewport.getCenter();
         locationNe = {
           lat: placeAutocomlete.geometry.viewport.getNorthEast().lat(),
           lng: placeAutocomlete.geometry.viewport.getNorthEast().lng(),
         };
         locatioName = placeAutocomlete.name;
+        locationBonds = placeAutocomlete.geometry.viewport;
       } else {
         locationCenter = search.request.location;
+        locationBonds = search.request.bounds;
         locatioName = search.locatioName;
         locationNe = search.ne;
       }
@@ -289,11 +305,11 @@ export default function ResultsPage() {
 
     const searchObject = {
       request: {
-        location: locationCenter,
         type: locationtype,
-        radius: locationRadius,
-        // bonds: locationBonds,
+        bounds: locationBonds,
       },
+      location: locationCenter,
+      radius: locationRadius,
       locatioName: locatioName,
       ne: locationNe,
     };
