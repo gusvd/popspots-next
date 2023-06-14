@@ -30,6 +30,7 @@ const mapOptions = {
 };
 
 const radiusSelectOptions = [
+  { value: 0, label: "Auto" },
   { value: 1000, label: "1 km" },
   { value: 2000, label: "2 km" },
   { value: 5000, label: "5 km" },
@@ -63,10 +64,7 @@ export default function ResultsPage() {
   const [search, setSearch] = useState();
   const [searchMessage, setSearchMessage] = useState("");
   const [resultList, setResultList] = useState();
-  const [selectedRadius, setSelectedRadius] = useState({
-    value: 1000,
-    label: "1 km",
-  });
+  const selectedRadius = useRef();
   const radiusOverwrite = useRef(false);
   const [mapVisible, setMapVisible] = useState(false);
 
@@ -196,9 +194,10 @@ export default function ResultsPage() {
     if (!resultList || !search) return; // stops if the reuslt list or search state is empty
 
     // Add circle
-    const circleCenter = search.request.location;
-    const circleRadius = search.request.radius;
+    const circleCenter = search.location;
+    const circleRadius = search.radius;
     const mapCircle = map.current;
+    const bounds = search.request.bounds;
 
     circle.current = new google.maps.Circle({
       strokeColor: "#4C04A9",
@@ -212,10 +211,22 @@ export default function ResultsPage() {
     });
     circle.current.setMap(mapCircle);
     map.current.setCenter(circleCenter);
-    map.current.fitBounds(circle.current.getBounds()); // fit map to bounds of the circle
+    map.current.fitBounds(bounds); // fit map to bounds of the circle
+
+    // rectangle to test bounds
+    const rectangle = new google.maps.Rectangle({
+      strokeColor: "#FF0000",
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: "#FF0000",
+      fillOpacity: 0.35,
+      bounds: search.request.bounds,
+    });
+    rectangle.setMap(mapCircle);
 
     return () => {
       deleteCircle();
+      rectangle.setMap(null);
     };
   }, [resultList]);
 
@@ -231,10 +242,11 @@ export default function ResultsPage() {
   function updateSearch() {
     const placeAutocomlete = autocomplete.current.getPlace();
     const typeSelect = locationType.current.getValue();
-    let locationCenter,
+    const selectedRadiusValue = selectedRadius.current.getValue()[0].value;
+    let locationBonds,
+      locationCenter,
       locationtype,
       locationRadius,
-      locationBonds,
       locatioName,
       locationNe;
 
@@ -249,34 +261,40 @@ export default function ResultsPage() {
       // If the Autocomplete has been set grab the information from it
       // Otherwise use the previous information from the Search state
       // This will happen when the location comes from the Search Params
-      // and the user searches again without slecting a new location from the autcomplete
-
+      // and the user searches again without selecting a new location from the autcomplete
       if (placeAutocomlete) {
-        locationCenter = {
-          lat: placeAutocomlete.geometry.location.lat(),
-          lng: placeAutocomlete.geometry.location.lng(),
-        };
+        locationBonds = placeAutocomlete.geometry.viewport;
+        locationCenter = placeAutocomlete.geometry.viewport.getCenter();
         locationNe = {
           lat: placeAutocomlete.geometry.viewport.getNorthEast().lat(),
           lng: placeAutocomlete.geometry.viewport.getNorthEast().lng(),
         };
         locatioName = placeAutocomlete.name;
       } else {
-        locationCenter = search.request.location;
-        locatioName = search.locatioName;
+        locationBonds = search.request.bounds;
+        locationCenter = search.location;
         locationNe = search.ne;
+        locatioName = search.locatioName;
       }
       // Set radius. Either from the Radius Select or
       // from the bounds coming from the Autocomplete
-      locationRadius = radiusOverwrite.current
-        ? selectRadius.current.getValue()[0].value
-        : boundsToRadius(locationCenter, locationNe);
-      changeSelectedRadius(locationRadius);
+      if (selectedRadiusValue !== 0) {
+        locationRadius = selectedRadiusValue;
+      } else {
+        locationRadius = boundsToRadius(locationCenter, locationNe);
+      }
+
+      // locationRadius = radiusOverwrite.current
+      //   ? selectRadius.current.getValue()[0].value
+      //   : boundsToRadius(locationCenter, locationNe);
+      // changeSelectedRadius(locationRadius);
+
       locationtype = locationType.current.getValue()[0].value;
       // If the search state hasn't been set up
-      // we grab the information from the Query Params
+      // we grab all the information from the Query Params
     } else if (searchCenter) {
       locationCenter = searchCenter;
+      locationBonds = searchBounds;
       locationtype = searchType;
       locatioName = searchName;
       locationNe = searchNe;
@@ -289,14 +307,15 @@ export default function ResultsPage() {
 
     const searchObject = {
       request: {
-        location: locationCenter,
         type: locationtype,
-        radius: locationRadius,
-        // bonds: locationBonds,
+        bounds: locationBonds,
       },
       locatioName: locatioName,
       ne: locationNe,
+      location: locationCenter,
+      radius: locationRadius,
     };
+    console.log("search object", searchObject);
 
     setSearch(searchObject);
   }
@@ -313,7 +332,7 @@ export default function ResultsPage() {
     let closestRadius = options.reduce((prev, curr) =>
       Math.abs(curr - radius) < Math.abs(prev - radius) ? curr : prev
     );
-    return closestRadius;
+    return radius; //closestRadius;
   }
 
   function changeSelectedRadius(radius) {
@@ -419,11 +438,11 @@ export default function ResultsPage() {
                 singleValue: () => "text-purple-800",
               }}
               options={radiusSelectOptions}
-              value={selectedRadius}
-              onChange={handleRadiusSelectChange}
-              ref={selectRadius}
+              defaultValue={radiusSelectOptions[0]}
+              // value={selectedRadius.current}
+              // onChange={handleRadiusSelectChange}
+              ref={selectedRadius}
             />
-            {/* </div> */}
           </div>
           <div>
             {/* Search summary ---- */}
@@ -510,12 +529,7 @@ function CustomMarker({ index, item, map, children }) {
 
     // The event listener is necessary to make the markers interactable
     // Little hack but without it the markers won't respond to mouse events
-    marker.addListener("click", () => {
-      // infoWindow.close();
-      // const content = `${index}. ${item.name}`;
-      // infoWindow.setContent(content);
-      // infoWindow.open(marker.map, marker);
-    });
+    marker.addListener("click", () => {});
 
     // Add to the array so it can be cleaned later
     markersRef.current.push(marker);

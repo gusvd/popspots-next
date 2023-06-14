@@ -50,7 +50,7 @@ const SearchForm = () => {
     function success(position) {
       geolocationLat.current = position.coords.latitude;
       geoLocationLng.current = position.coords.longitude;
-      autocompleteInput.current.value = "My Location";
+      autocompleteInput.current.placeholder = "My Location";
       console.log("geolocation", geolocationLat, geoLocationLng);
     }
 
@@ -62,7 +62,7 @@ const SearchForm = () => {
     if (!navigator.geolocation) {
       console.log("Geolocation is not supported by your browser");
     } else {
-      autocompleteInput.current.value = "Finding my Location...";
+      // autocompleteInput.current.placeholder = "Finding my Location...";
       navigator.geolocation.getCurrentPosition(success, error);
     }
   }
