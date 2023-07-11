@@ -1,8 +1,9 @@
+import Link from "next/link";
 import icon from "../../public/popspots-icon.svg";
 
 function About() {
   return (
-    <div className="mx-auto mt-16 flex max-w-2xl flex-col items-center gap-6 text-center">
+    <div className="m-16 mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
       <h2 className="text-4xl font-semibold text-purple-800 md:text-5xl">
         What&#039;s PopSpots?
       </h2>
@@ -23,7 +24,10 @@ function About() {
       </p>
       <img className="h-14" src={icon.src} />
       <p className="mt-16 text-purple-800">
-        A gift to the internet by @gusvdias
+        A gift to the internet by{" "}
+        <Link href={"https://twitter.com/GusvDias"} target="_blank">
+          @gusvdias
+        </Link>
       </p>
     </div>
   );

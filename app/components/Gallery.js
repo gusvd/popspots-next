@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 import categories from "../../public/categoriesGallery";
 import arrowRight from "../../public/arrow-right.svg";
 import citiesList from "../../public/featuredCities";
-import About from "../components/About";
 
 const Gallery = () => {
   const sliderRef = useRef();
@@ -72,7 +71,6 @@ const Gallery = () => {
       <div className="grid w-full grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-6">
         <FeaturedCities typeIndex={selected} categories={categories} />
       </div>
-      <About />
     </div>
   );
 };
