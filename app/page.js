@@ -6,7 +6,7 @@ import LogoHeader from "./components/LogoHeader";
 import RestaurantsImg from "../public/restaurants.jpg";
 import HotelsImg from "../public/hotel.jpg";
 
-let search = null;
+let search = null; // Maybe remove
 
 export default function HomePage() {
   return (
