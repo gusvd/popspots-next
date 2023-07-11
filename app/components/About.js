@@ -4,15 +4,15 @@ function About() {
   return (
     <div className="mx-auto mt-16 flex max-w-2xl flex-col items-center gap-6 text-center">
       <h2 className="text-4xl font-semibold text-purple-800 md:text-5xl">
-        What's PopSpots?
+        What&#039;s PopSpots?
       </h2>
       <p>
         PopSpots is a handy service that assists you in discovering the hottest
-        spots, categorized by type, whether you're nearby or anywhere across the
-        globe.
+        spots, categorized by type, whether you&#039;re nearby or anywhere
+        across the globe.
       </p>
       <p>
-        Next time you're out exploring a new city or neighborhood, you can
+        Next time you&#039;re out exploring a new city or neighborhood, you can
         effortlessly locate the perfect spot to satisfy your cravings, enjoy a
         good cup of coffee, or explore must-visit galleries and attractions.
       </p>
