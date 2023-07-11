@@ -214,19 +214,19 @@ export default function ResultsPage() {
     map.current.fitBounds(bounds); // fit map to bounds of the circle
 
     // rectangle to test bounds
-    const rectangle = new google.maps.Rectangle({
-      strokeColor: "#FF0000",
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: "#FF0000",
-      fillOpacity: 0.35,
-      bounds: search.request.bounds,
-    });
-    rectangle.setMap(mapCircle);
+    // const rectangle = new google.maps.Rectangle({
+    //   strokeColor: "#FF0000",
+    //   strokeOpacity: 0.8,
+    //   strokeWeight: 2,
+    //   fillColor: "#FF0000",
+    //   fillOpacity: 0.35,
+    //   bounds: search.request.bounds,
+    // });
+    // rectangle.setMap(mapCircle);
 
     return () => {
       deleteCircle();
-      rectangle.setMap(null);
+      // rectangle.setMap(null);
     };
   }, [resultList]);
 
