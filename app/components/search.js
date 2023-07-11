@@ -78,10 +78,9 @@ const SearchForm = () => {
 
     if (placeAutocomlete) {
       const locationCenter = {
-        lat: placeAutocomlete.geometry.location.lat(),
-        lng: placeAutocomlete.geometry.location.lng(),
+        lat: placeAutocomlete.geometry.viewport.getCenter().lat(),
+        lng: placeAutocomlete.geometry.viewport.getCenter().lng(),
       };
-      console.log(locationCenter);
       center = JSON.stringify(locationCenter);
       bounds = JSON.stringify(placeAutocomlete.geometry.viewport);
       placeName = autocompleteInput.current.value;

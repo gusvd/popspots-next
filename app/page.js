@@ -13,10 +13,10 @@ export default function HomePage() {
     <div className="App">
       <div className="mx-auto flex h-full max-w-7xl bg-gradient-to-t from-beige-100 to-beige-50">
         {/* Left column */}
-        <div className="flex flex-col gap-y-12 px-6 py-16 md:w-3/5 md:px-20">
+        <div className="flex flex-col gap-y-16 px-6 py-16 md:w-3/5 md:px-20">
           <LogoHeader />
           <div>
-            <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
+            <h1 className="text-4xl font-semibold leading-tight md:text-5xl md:leading-tight">
               Find the most{" "}
               <span className="bg-gradient-to-t from-purple-900 to-purple-300 bg-clip-text text-transparent">
                 popular places

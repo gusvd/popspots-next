@@ -280,6 +280,7 @@ export default function ResultsPage() {
       // from the bounds coming from the Autocomplete
       if (selectedRadiusValue !== 0) {
         locationRadius = selectedRadiusValue;
+        locationBonds = radiusToBounds(locationCenter, selectedRadiusValue);
       } else {
         locationRadius = boundsToRadius(locationCenter, locationNe);
       }
@@ -294,12 +295,19 @@ export default function ResultsPage() {
       // we grab all the information from the Query Params
     } else if (searchCenter) {
       locationCenter = searchCenter;
-      locationBonds = searchBounds;
       locationtype = searchType;
       locatioName = searchName;
-      locationNe = searchNe;
-      // locationRadius = selectRadius.current.getValue()[0].value;
-      locationRadius = boundsToRadius(locationCenter, locationNe);
+      // Test if the Search param contains Searchbounds
+      // Search using geolocation doesn't include it and needs to be handled differently using a default radius
+      if (searchBounds) {
+        locationBonds = searchBounds;
+        locationNe = searchNe;
+        locationRadius = boundsToRadius(locationCenter, locationNe);
+      } else {
+        locationBonds = radiusToBounds(locationCenter, 2000);
+        locationNe = locationBonds.getNorthEast();
+        locationRadius = 2000;
+      }
     } else {
       setSearchMessage("Please select a location above.");
       return;
@@ -333,6 +341,15 @@ export default function ResultsPage() {
       Math.abs(curr - radius) < Math.abs(prev - radius) ? curr : prev
     );
     return radius; //closestRadius;
+  }
+
+  function radiusToBounds(myLocation, radius) {
+    const boundsCircle = new google.maps.Circle({
+      radius: radius,
+      center: myLocation,
+    });
+    const bounds = boundsCircle.getBounds();
+    return bounds;
   }
 
   function changeSelectedRadius(radius) {
