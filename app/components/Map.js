@@ -19,6 +19,7 @@ const MapComponent = () => {
     // fullscreenControl: false,
     gestureHandling: "cooperative",
     mapId: "92d1a48ec4b0d2cc",
+    center: { lat: 51.4572, lng: 0.1277 },
   };
 
   // LOAD GOOGLE MAPS API
@@ -28,16 +29,26 @@ const MapComponent = () => {
     //   loaderOptions,
   });
 
-  // Load Libraries
-  loader.load().then(async () => {
-    const { Map } = await google.maps.importLibrary("maps");
-
-    //Add Map to DOM
-    googlemap.current = new Map(document.getElementById("map"), {
-      center: { lat: 51.4572, lng: 0.1277 },
-      ...mapOptions,
+  // Promise for a specific library
+  loader
+    .load()
+    .then((google) => {
+      new google.maps.Map(document.getElementById("map"), mapOptions);
+    })
+    .catch((e) => {
+      // do something
     });
-  });
+
+  // Load Libraries
+  // loader.load().then(async () => {
+  //   const { Map } = await google.maps.importLibrary("maps");
+
+  //Add Map to DOM
+  // googlemap.current = new Map(document.getElementById("map"), {
+  //   center: { lat: 51.4572, lng: 0.1277 },
+  //   ...mapOptions,
+  // });
+  // });
 
   return <div className="h-full w-full " id="map"></div>;
 };
