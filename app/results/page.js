@@ -5,6 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Loader } from "@googlemaps/js-api-loader";
 import Select from "react-select";
 
+import Gallery from "../components/Gallery";
+import About from "../components/About";
+
 import LogoHeader from "../components/LogoHeader";
 import SearchIcon from "../../public/icon-search.svg";
 import pinIcon from "../../public/pin.svg";
@@ -389,7 +392,7 @@ export default function ResultsPage() {
   // ************************************ //
   return (
     <div className="App">
-      <div className="relative flex h-screen max-w-7xl flex-col md:h-auto md:flex-row">
+      <div className="relative mx-auto mb-36 flex h-screen max-w-7xl flex-col md:h-auto md:flex-row">
         {/* LEFT COLUMN ---- */}
         <div className="flex flex-col gap-y-6 px-6 pb-0 pt-16 md:w-3/5 md:py-16 lg:px-20">
           <LogoHeader />
@@ -507,6 +510,7 @@ export default function ResultsPage() {
           </div>
         </div>
       </div>
+      <About />
     </div>
   );
 }

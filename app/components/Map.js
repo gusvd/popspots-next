@@ -2,7 +2,7 @@
 import { Loader } from "@googlemaps/js-api-loader";
 import { useRef } from "react";
 
-const MapComponent = () => {
+const MapComponent = ({ center }) => {
   const googlemap = useRef();
   const mapContainer = useRef();
 
@@ -19,7 +19,7 @@ const MapComponent = () => {
     // fullscreenControl: false,
     gestureHandling: "cooperative",
     mapId: "92d1a48ec4b0d2cc",
-    center: { lat: 51.4572, lng: 0.1277 },
+    center: center,
   };
 
   // LOAD GOOGLE MAPS API

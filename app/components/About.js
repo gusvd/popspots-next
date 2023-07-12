@@ -3,7 +3,7 @@ import icon from "../../public/popspots-icon.svg";
 
 function About() {
   return (
-    <div className="m-16 mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <div className="m-16 mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center md:px-0">
       <h2 className="text-4xl font-semibold text-purple-800 md:text-5xl">
         What&#039;s PopSpots?
       </h2>

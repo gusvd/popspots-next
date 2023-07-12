@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import categories from "../../public/categoriesGallery";
@@ -39,7 +39,7 @@ const Gallery = () => {
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-14 p-16">
+    <div className="mx-auto flex max-w-7xl flex-col gap-14 px-6 py-16 md:px-16">
       <div className="relative">
         <div
           className={`absolute left-0 top-0 flex h-full cursor-pointer items-center bg-gradient-to-r from-beige-50 to-beige-50/0 pr-8 ${
@@ -106,7 +106,10 @@ const FeaturedCities = ({ typeIndex, categories }) => {
         key={index}
       >
         <div className="h-24 overflow-hidden rounded-2xl md:h-32">
-          <img
+          <Image
+            width="0"
+            height="0"
+            sizes="100vw"
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
             src={city.image}
           />
