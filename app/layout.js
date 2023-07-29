@@ -27,6 +27,13 @@ export const metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Popspots",
+    description: "Find popular places near you. Or anywhere else.",
+    creator: "@gusvdias",
+    site: "@gusvdias",
+  },
 };
 
 export default function RootLayout({ children }) {
