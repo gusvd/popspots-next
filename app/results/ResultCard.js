@@ -5,9 +5,13 @@ export default function ResultCard(props) {
   return (
     <>
       <a
-        href={"https://www.google.com/maps/place/?q=place_id:" + props.placeID}
+        href={`https://www.google.com/maps/search/?api=1&query=${props.address}&query_place_id=${props.placeID}`}
         target="_blank"
       >
+        {/* <a
+        href={"https://www.google.com/maps/place/?q=place_id:" + props.placeID}
+        target="_blank"
+      > */}
         <div className="group flex flex-col gap-3 rounded-2xl p-4 text-sm text-beige-900 transition-colors hover:cursor-pointer hover:bg-beige-100">
           {props.image && <img src={props.image} alt="Cover Image" />}
           <h3 className="text line-clamp-3 text-base font-semibold text-purple-800">
