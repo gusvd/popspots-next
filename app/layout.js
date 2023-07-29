@@ -15,7 +15,7 @@ export const metadata = {
   description: "Find the most popular places near you. Or anywhere els.",
   keywords:
     "places, location, travel, hotspots, near me, popular, maps, restaurants, hotels, attractions, galleries, bars, cafes, gyms, night clubs, parks",
-  metadataBase: new URL("https://popspots.com"),
+  metadataBase: new URL("https://popspots.co"),
   alternates: {
     canonical: "/",
   },

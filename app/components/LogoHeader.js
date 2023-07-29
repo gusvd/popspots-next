@@ -13,7 +13,7 @@ const LogoHeader = () => {
         target="_blank"
         className="felx-row flex items-center gap-1 rounded-full bg-beige-100 px-4 py-2 text-xs text-purple-900 transition-colors hover:bg-beige-200"
       >
-        <img className="h-3" src={BirdIcon.src} />
+        {/* <img className="h-3" src={BirdIcon.src} /> */}
         @gusvdias
       </Link>
     </div>
