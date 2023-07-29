@@ -392,7 +392,7 @@ export default function ResultsPage() {
   // ************************************ //
   return (
     <div className="App">
-      <div className="relative mx-auto mb-36 flex h-screen max-w-7xl flex-col md:h-auto md:flex-row">
+      <div className="mx-auto mb-36 flex max-w-7xl flex-col md:h-auto md:flex-row">
         {/* LEFT COLUMN ---- */}
         <div className="flex flex-col gap-y-6 px-6 pb-0 pt-16 md:w-3/5 md:py-16 lg:px-20">
           <LogoHeader />
@@ -479,7 +479,7 @@ export default function ResultsPage() {
         </div>
         {/* MAP RIGHT COLUMN ---- */}
         <div
-          className={`grow px-0 md:sticky md:top-0 md:block md:h-screen md:w-2/5 md:flex-grow-0 ${
+          className={`h-screen grow px-0 md:sticky md:top-0 md:block md:h-screen md:w-2/5 md:flex-grow-0 ${
             !mapVisible && "hidden"
           }`}
         >
@@ -497,7 +497,7 @@ export default function ResultsPage() {
             })}
         </div>
         {/* Toggle button Map:List */}
-        <div className="pointer-events-none fixed bottom-7 flex w-full justify-center md:hidden">
+        <div className="pointer-events-none sticky bottom-7 flex w-full justify-center md:hidden">
           <div
             className="pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-full bg-purple-900 px-6 py-3"
             onClick={() => setMapVisible((prevMapVisible) => !prevMapVisible)}
