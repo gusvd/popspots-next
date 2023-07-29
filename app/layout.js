@@ -9,7 +9,7 @@ const dmSans = DM_Sans({
 
 export const metadata = {
   title: {
-    template: "%s | PopSpots",
+    template: "%s | Popspots",
     default: "Find popular places near you. Or anywhere else.",
   },
   description: "Find the most popular places near you. Or anywhere els.",
@@ -18,6 +18,14 @@ export const metadata = {
   metadataBase: new URL("https://popspots.co"),
   alternates: {
     canonical: "/",
+  },
+  openGraph: {
+    title: "Find popular places near you. Or anywhere else | Popspots",
+    description: "Find popular places near you. Or anywhere else.",
+    url: "https://popspots.co",
+    siteName: "Popspots",
+    locale: "en_US",
+    type: "website",
   },
 };
 
